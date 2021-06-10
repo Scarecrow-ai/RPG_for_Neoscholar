@@ -7,10 +7,10 @@ class Player:
 
 
 class MarioBright(Player, pygame.sprite.Sprite):
-    skills = {'Fire': 1, 'Punch': 2}
+    skills = {'Fire': 0, 'Punch': 1}
     atk = 100
     defense = 50
-    speed = 15
+    speed = 10
 
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self)

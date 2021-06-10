@@ -3,12 +3,12 @@
 import pygame
 
 
-class Enemies:
+class Enemy:
     pass
 
 
-class MarioDark(Enemies, pygame.sprite.Sprite):
-    skills = {'Fire': 1, 'Punch': 2}
+class MarioDark(Enemy, pygame.sprite.Sprite):
+    skills = {'Fire': 0, 'Punch': 1}
     atk = 100
     defense = 50
     speed = 15
@@ -28,3 +28,6 @@ class MarioDark(Enemies, pygame.sprite.Sprite):
             pass
         elif self.skills[skill] == 2:
             pass
+
+    def get_skills(self):
+        return self.skills.keys()
