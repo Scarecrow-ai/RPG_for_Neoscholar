@@ -1,10 +1,10 @@
 import pygame
 
-# This class is expected to be used directly in the final work
 import Characters
-import Monsters
+import Enemies
 
 
+# This class is expected to be used directly in the final work
 class BattleManger:
     characters = []
     enemies = []
