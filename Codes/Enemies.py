@@ -8,7 +8,6 @@ class Enemies:
 
 
 class MarioDark(Enemies, pygame.sprite.Sprite):
-    image = None
     skills = {'Fire': 1, 'Punch': 2}
     atk = 100
     defense = 50

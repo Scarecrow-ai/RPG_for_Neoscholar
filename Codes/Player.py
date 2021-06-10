@@ -2,12 +2,11 @@
 import pygame
 
 
-class Character:
+class Player:
     pass
 
 
-class MarioBright(Character, pygame.sprite.Sprite):
-    image = None
+class MarioBright(Player, pygame.sprite.Sprite):
     skills = {'Fire': 1, 'Punch': 2}
     atk = 100
     defense = 50
