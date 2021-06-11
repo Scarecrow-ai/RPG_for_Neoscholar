@@ -45,20 +45,21 @@ class boy(Enemy, pygame.sprite.Sprite):
         boy.count += 1
         self.name = self.specie + str(self.count)
         self.hp = self.max_hp
+        sprites = pygame.transform.flip(pygame.image.load('../Assets/zombie.png').convert_alpha(), True, False)
         if self.walk_sprites_surf is None:
             self.walk_sprites_surf = [
-                pygame.transform.scale(pygame.image.load('../Assets/步行1_0_0.png').convert_alpha(), (29, 47)),
-                pygame.transform.scale(pygame.image.load('../Assets/步行1_1_1.png').convert_alpha(), (29, 47)),
-                pygame.transform.scale(pygame.image.load('../Assets/步行1_2_2.png').convert_alpha(), (29, 47)),
-                pygame.transform.scale(pygame.image.load('../Assets/步行1_3_3.png').convert_alpha(), (29, 47))]
+                pygame.transform.scale(sprites.subsurface(0, 222, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(72, 222, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(144, 222, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(216, 222, 72, 111), (58, 94))]
 
             self.swing_sprites_surf = [
-                pygame.transform.scale(pygame.image.load('../Assets/swingT1_0_16.png').convert_alpha(), (50, 46)),
-                pygame.transform.scale(pygame.image.load('../Assets/swingT1_1_17.png').convert_alpha(), (71, 63)),
-                pygame.transform.scale(pygame.image.load('../Assets/swingT1_2_18.png').convert_alpha(), (75, 79))]
+                pygame.transform.scale(sprites.subsurface(0, 111, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(72, 111, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(144, 111, 72, 111), (58, 94)),
+                pygame.transform.scale(sprites.subsurface(216, 111, 72, 111), (58, 94))]
 
-            self.sit_sprites = pygame.transform.scale(pygame.image.load('../Assets/sit_0.png').convert_alpha(),
-                                                      (28, 44))
+            self.sit_sprites = pygame.transform.scale(sprites.subsurface(0, 333, 72, 111), (58, 94))
 
             self.death_sprites = pygame.transform.scale(pygame.image.load('../Assets/S_Holy02.png').convert_alpha(),
                                                         (28, 44))
@@ -88,7 +89,7 @@ class boy(Enemy, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.using_skill == 0:
-            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 25:
+            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 50:
                 self.walk(self.skill_target)
                 return self
             else:

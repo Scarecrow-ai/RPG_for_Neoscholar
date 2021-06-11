@@ -82,14 +82,14 @@ class boy(Player, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.using_skill == 0:
-            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 25:
+            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 50:
                 self.walk(self.skill_target)
                 return self
             else:
                 if self.walk_pic_count != 0 or self.walk_call_time != 0:
                     self.walk_call_time = 0
                     self.walk_pic_count = 0
-                return self.fire(self.skill_target)
+                return self.Swing(self.skill_target)
 
     def walk(self, target):
         vector = vector_subtraction(target.rect.topleft, self.rect.topleft)
@@ -104,7 +104,7 @@ class boy(Player, pygame.sprite.Sprite):
         else:
             self.walk_call_time += 1
 
-    def fire(self, target):
+    def Swing(self, target):
         if self.fire_call_time == 10:
             self.change_sprites(self.swing_sprites_surf[self.fire_pic_count])
             self.image = pygame.transform.flip(self.image, self.rect.left < target.rect.left, False)
