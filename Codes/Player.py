@@ -9,11 +9,7 @@ class Player:
     defense = None
     speed = None
 
-    def use_skill(self, skill, target):  # Switch-case are not supported.
-        if self.skills[skill] == 1:
-            pass
-        elif self.skills[skill] == 2:
-            pass
+    def use_skill(self, skill):  # Switch-case are not supported.
         return self
 
     def get_skills(self):
@@ -28,7 +24,7 @@ class Player:
 
 class boy(Player, pygame.sprite.Sprite):
     skills = {'Swing': 0, 'Punch': 1}
-    atk = 10
+    atk = 50
     defense = 50
     speed = 4
     max_hp = 1000
@@ -36,6 +32,7 @@ class boy(Player, pygame.sprite.Sprite):
     swing_sprites_surf = None
     sit_sprites = None
     death_sprites = None
+    name = 'boy'
 
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self)
@@ -70,13 +67,15 @@ class boy(Player, pygame.sprite.Sprite):
         self.fire_call_time = 0
         self.fire_pic_count = 0
 
-    def use_skill(self, skill, target):  # Switch-case are not supported.
+    def use_skill(self, skill):  # Switch-case are not supported.
         if self.skills[skill] == 0:
             self.using_skill = 0
-            self.skill_target = target
         elif self.skills[skill] == 1:
             self.using_skill = 1
-            self.skill_target = target
+        return None
+
+    def choose_target(self, target):
+        self.skill_target = target
         return self
 
     def update(self):
@@ -116,6 +115,8 @@ class boy(Player, pygame.sprite.Sprite):
                 self.change_sprites(self.sit_sprites)
                 self.image = pygame.transform.flip(self.image, self.rect.left < target.rect.left, False)
                 target.lose_hp(self.atk * 1.5)
+                self.using_skill = None
+                self.skill_target = None
                 return None
             self.fire_call_time = 0
         else:
@@ -141,7 +142,6 @@ class boy(Player, pygame.sprite.Sprite):
             self.dead = True
             self.change_sprites(self.death_sprites)
         self.draw_health_bar()
-
 
     def is_dead(self):
         return self.dead

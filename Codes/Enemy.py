@@ -17,7 +17,7 @@ class Enemy:
         return self
 
     def get_skills(self):
-        return self.skills.keys()
+        return list(self.skills.keys())
 
     def update(self):
         pass
@@ -37,8 +37,13 @@ class boy(Enemy, pygame.sprite.Sprite):
     sit_sprites = None
     death_sprites = None
 
+    specie = 'zombie'
+    count = 0
+
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self)
+        boy.count += 1
+        self.name = self.specie + str(self.count)
         self.hp = self.max_hp
         if self.walk_sprites_surf is None:
             self.walk_sprites_surf = [
