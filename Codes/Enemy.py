@@ -59,6 +59,8 @@ class boy(Enemy, pygame.sprite.Sprite):
                                                         (28, 44))
 
         self.change_sprites(self.sit_sprites)
+        self.mask = pygame.mask.from_surface(self.image)
+        self.draw_health_bar()
         self.rect = self.image.get_rect(center=pos)
         self.using_skill = None
         self.skill_target = None
@@ -81,7 +83,7 @@ class boy(Enemy, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.using_skill == 0:
-            if not pygame.sprite.collide_rect(self, self.skill_target):
+            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 25:
                 self.walk(self.skill_target)
                 return self
             else:
@@ -124,21 +126,21 @@ class boy(Enemy, pygame.sprite.Sprite):
         length, height = sprites.get_size()
         height += 10
         self.image = pygame.Surface((length, height), pygame.SRCALPHA)
+        self.draw_health_bar()
+        self.image.blit(sprites, (0, 10), (0, 0, length, height))
 
-        # Draw Health Bar
+    def draw_health_bar(self):
         pygame.draw.rect(self.image, (0, 0, 0), (0, 0, 22, 10), 1)
         pygame.draw.rect(self.image, (0, 128, 0), (1, 1, int(self.hp / self.max_hp * 20), 8))
         pygame.draw.rect(self.image, (255, 0, 0),
                          (int(self.hp / self.max_hp * 20) + 1, 1, int((self.max_hp - self.hp) / self.max_hp * 20), 8))
-
-        self.image.blit(sprites, (0, 10), (0, 0, length, height))
-        self.mask = pygame.mask.from_surface(self.image)
 
     def lose_hp(self, val):
         self.hp -= val
         if self.hp <= 0:
             self.dead = True
             self.change_sprites(self.death_sprites)
+        self.draw_health_bar()
 
     def is_dead(self):
         return self.dead

@@ -4,13 +4,15 @@ import random
 import pygame
 import Player
 import Enemy
+import UI
 
 
 # This class is expected to be used directly in the final work with With the modification of player_move and enemy_move
 class BattleManger:
     _instance_lock = threading.Lock()
 
-    def __init__(self, players, enemies):
+    def __init__(self, players, enemies, surface):
+        self.surface = surface
         self.players = players
         self.enemies = enemies
         self.moving = None  # A character is moving
@@ -50,7 +52,8 @@ class BattleManger:
                 self.enemy_move(character)
 
     def player_move(self, character):
-        self.moving = character.use_skill('Swing', random.choice(self.enemies.sprites()))
+        buttons = UI.get_skill_buttons(character, 100, 100)
+        return buttons
 
     def enemy_move(self, character):
         self.moving = character.use_skill('Swing', random.choice(self.players.sprites()))
@@ -59,29 +62,35 @@ class BattleManger:
 # A simple function to run the demo, not expected to be used directly in the final work
 def demo():
     pygame.init()
-    window_size_x = 1200
-    window_size_y = 622
+    window_size_x = 1280
+    window_size_y = 720
     surface = pygame.display.set_mode([window_size_x, window_size_y])
     pygame.display.set_caption('BattleDemo')
-    background = pygame.image.load('../Assets/mario_background.png').convert()
-    surface.blit(background, (0, 0))
+    background = pygame.transform.scale(pygame.image.load('../Assets/mario_background.png').convert(), (1280, 720))
+    # surface.blit(background, (0, 0))
 
     player_group = pygame.sprite.Group()
     enemy_group = pygame.sprite.Group()
 
     player_group.add(Player.boy((1000, 300)))
-    player_group.add(Player.boy((1000, 400)))
-    enemy_group.add(Enemy.boy((300, 100)))
     enemy_group.add(Enemy.boy((300, 500)))
 
     battle_end = False
-    battleManger = BattleManger(player_group, enemy_group)
+    battleManger = BattleManger(player_group, enemy_group, surface)
 
     clock = pygame.time.Clock()
+
+    buttons = battleManger.player_move(player_group.sprites()[0])
+    layerDirty = pygame.sprite.LayeredDirty((buttons[0]))
 
     while not battle_end:
         clock.tick(60)
         battle_end = battleManger.update()
+
+        print(buttons[0].getBackground())
+        # print(buttons[0].isVisible())
+        layerDirty.draw(surface)
+        buttons[0].markDirty()
 
         player_group.clear(surface, background)
         enemy_group.clear(surface, background)
