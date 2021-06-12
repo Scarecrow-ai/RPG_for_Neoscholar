@@ -23,7 +23,7 @@ class Player:
 
 
 class boy(Player, pygame.sprite.Sprite):
-    skills = {'Swing': 0, 'Punch': 1}
+    skills = {'Swing': 0, 'Thunder': 1}
     atk = 50
     defense = 50
     speed = 4
@@ -107,7 +107,7 @@ class boy(Player, pygame.sprite.Sprite):
                 if self.walk_pic_count != 0 or self.walk_call_time != 0:
                     self.walk_call_time = 0
                     self.walk_pic_count = 0
-                return self.punch(self.skill_target)
+                return self.Thunder(self.skill_target)
 
     def walk(self, target, direction):  # direction is a bool whether character walk to target
         if direction:
@@ -128,7 +128,7 @@ class boy(Player, pygame.sprite.Sprite):
     def swing(self, target):
         return self.attack_skill(target, self.swing_sprites_surf, 1.5)
 
-    def punch(self, target):
+    def Thunder(self, target):
         return self.attack_skill(target, self.punch_sprites_surf, 1.0, effect_sprit=self.punch_effect_sprite)
 
     def attack_skill(self, target, spirits, power, effect_sprit=None):
