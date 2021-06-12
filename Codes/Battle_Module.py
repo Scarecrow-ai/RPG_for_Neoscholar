@@ -39,27 +39,10 @@ class BattleManger:
         elif self.moving:
             self.moving = self.moving.update()
         else:
-            for character in self.players:
-                if character.is_dead():
-                    self.players.remove(character)
-                    self.characters.remove(character)
-                    character.kill()
-            for character in self.enemies:
-                if character.is_dead():
-                    self.enemies.remove(character)
-                    self.characters.remove(character)
-                    character.kill()
-            if len(self.enemies.sprites()) == 0 or len(self.players.sprites()) == 0:
+            self.check_corpse()
+            if not self.enemies.sprites() or not self.players.sprites():
                 return True
-            if self.next_character >= len(self.characters):
-                self.next_character = 0
-            character = self.characters[self.next_character]
-            self.next_character += 1
-            assert isinstance(character, Player.Player) or isinstance(character, Enemy.Enemy)
-            if isinstance(character, Player.Player):
-                self.player_move(character)
-            else:
-                self.enemy_move(character)
+            self.change_character()
 
     def player_move(self, character):
         self.selecting = character
@@ -85,6 +68,29 @@ class BattleManger:
                 self.targetButtons = None
             self.moving = self.selecting
             self.selecting = None
+
+    def check_corpse(self):
+        for character in self.players:
+            if character.is_dead():
+                self.players.remove(character)
+                self.characters.remove(character)
+                character.kill()
+        for character in self.enemies:
+            if character.is_dead():
+                self.enemies.remove(character)
+                self.characters.remove(character)
+                character.kill()
+
+    def change_character(self):
+        if self.next_character >= len(self.characters):
+            self.next_character = 0
+        character = self.characters[self.next_character]
+        self.next_character += 1
+        assert isinstance(character, Player.Player) or isinstance(character, Enemy.Enemy)
+        if isinstance(character, Player.Player):
+            self.player_move(character)
+        else:
+            self.enemy_move(character)
 
 
 # A simple function to run the demo, not expected to be used directly in the final work

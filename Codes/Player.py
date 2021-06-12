@@ -30,6 +30,8 @@ class boy(Player, pygame.sprite.Sprite):
     max_hp = 1000
     walk_sprites_surf = None
     swing_sprites_surf = None
+    punch_sprites_surf = None
+    punch_effect_sprite = None
     sit_sprites = None
     death_sprites = None
     name = 'boy'
@@ -48,12 +50,18 @@ class boy(Player, pygame.sprite.Sprite):
                 pygame.transform.scale(pygame.image.load('../Assets/swingT1_0_16.png').convert_alpha(), (50, 46)),
                 pygame.transform.scale(pygame.image.load('../Assets/swingT1_1_17.png').convert_alpha(), (71, 63)),
                 pygame.transform.scale(pygame.image.load('../Assets/swingT1_2_18.png').convert_alpha(), (75, 79))]
-
+            self.punch_sprites_surf = [
+                pygame.transform.scale(pygame.image.load('../Assets/容易刺_0_32.png').convert_alpha(), (50, 46)),
+                pygame.transform.scale(pygame.image.load('../Assets/容易刺_1_33.png').convert_alpha(), (71, 63)),
+            ]
             self.sit_sprites = pygame.transform.scale(pygame.image.load('../Assets/sit_0.png').convert_alpha(),
                                                       (28, 44))
 
             self.death_sprites = pygame.transform.scale(pygame.image.load('../Assets/S_Holy02.png').convert_alpha(),
                                                         (28, 44))
+            self.punch_effect_sprite = pygame.transform.scale(
+                pygame.image.load('../Assets/S_Thunder07.png').convert_alpha(),
+                (58, 94))
 
         self.change_sprites(self.sit_sprites)
         self.mask = pygame.mask.from_surface(self.image)
@@ -66,6 +74,7 @@ class boy(Player, pygame.sprite.Sprite):
         self.walk_pic_count = 0
         self.fire_call_time = 0
         self.fire_pic_count = 0
+        self.effect_done = False
 
     def use_skill(self, skill):  # Switch-case are not supported.
         if self.skills[skill] == 0:
@@ -83,16 +92,28 @@ class boy(Player, pygame.sprite.Sprite):
             return None
         if self.using_skill == 0:
             if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 50:
-                self.walk(self.skill_target)
+                self.walk(self.skill_target, True)
                 return self
             else:
                 if self.walk_pic_count != 0 or self.walk_call_time != 0:
                     self.walk_call_time = 0
                     self.walk_pic_count = 0
-                return self.Swing(self.skill_target)
+                return self.swing(self.skill_target)
+        if self.using_skill == 1:
+            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) < 100:
+                self.walk(self.skill_target, False)
+                return self
+            else:
+                if self.walk_pic_count != 0 or self.walk_call_time != 0:
+                    self.walk_call_time = 0
+                    self.walk_pic_count = 0
+                return self.punch(self.skill_target)
 
-    def walk(self, target):
-        vector = vector_subtraction(target.rect.topleft, self.rect.topleft)
+    def walk(self, target, direction):  # direction is a bool whether character walk to target
+        if direction:
+            vector = vector_subtraction(target.rect.topleft, self.rect.topleft)
+        else:
+            vector = vector_subtraction(self.rect.topleft, target.rect.topleft)
         self.rect.move_ip(vector_division(vector, 0.3 * vector_norm(vector)))
         if self.walk_call_time == 10:
             self.change_sprites(self.walk_sprites_surf[self.walk_pic_count])
@@ -104,20 +125,34 @@ class boy(Player, pygame.sprite.Sprite):
         else:
             self.walk_call_time += 1
 
-    def Swing(self, target):
+    def swing(self, target):
+        return self.attack_skill(target, self.swing_sprites_surf, 1.5)
+
+    def punch(self, target):
+        return self.attack_skill(target, self.punch_sprites_surf, 1.0, effect_sprit=self.punch_effect_sprite)
+
+    def attack_skill(self, target, spirits, power, effect_sprit=None):
         if self.fire_call_time == 10:
-            self.change_sprites(self.swing_sprites_surf[self.fire_pic_count])
+            self.change_sprites(spirits[self.fire_pic_count])
             self.image = pygame.transform.flip(self.image, self.rect.left < target.rect.left, False)
             self.fire_pic_count += 1
-            if self.fire_pic_count == len(self.swing_sprites_surf):
-                self.fire_pic_count = 0
-                self.fire_call_time = 0
-                self.change_sprites(self.sit_sprites)
-                self.image = pygame.transform.flip(self.image, self.rect.left < target.rect.left, False)
-                target.lose_hp(self.atk * 1.5)
-                self.using_skill = None
-                self.skill_target = None
-                return None
+            if self.fire_pic_count == len(spirits):
+                if effect_sprit and not self.effect_done:
+                    target.change_sprites(effect_sprit)
+                    self.fire_pic_count -= 1
+                    self.effect_done = True
+                elif effect_sprit and self.effect_done:
+                    target.change_sprites(target.sit_sprites)
+                    self.effect_done = False
+                if self.fire_pic_count == len(spirits):
+                    self.fire_pic_count = 0
+                    self.fire_call_time = 0
+                    self.change_sprites(self.sit_sprites)
+                    self.image = pygame.transform.flip(self.image, self.rect.left < target.rect.left, False)
+                    target.lose_hp(self.atk * power)
+                    self.using_skill = None
+                    self.skill_target = None
+                    return None
             self.fire_call_time = 0
         else:
             self.fire_call_time += 1
