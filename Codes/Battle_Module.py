@@ -111,6 +111,7 @@ def demo():
     enemy_group = pygame.sprite.Group()
 
     player_group.add(Player.boy((1000, 300)))
+    player_group.add(Player.boy((1000, 500)))
     enemy_group.add(Enemy.boy((300, 500)))
     enemy_group.add(Enemy.boy((800, 500)))
 

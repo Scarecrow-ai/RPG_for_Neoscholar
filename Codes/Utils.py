@@ -1,4 +1,4 @@
-def vector_subtraction(tuple1: tuple, tuple2: tuple):
+def vector_subtraction(tuple1, tuple2):
     assert len(tuple1) == len(tuple2)
     res = ()
     for i in range(0, len(tuple1)):
