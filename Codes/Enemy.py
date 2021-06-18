@@ -2,9 +2,10 @@
 import pygame
 from Utils import vector_subtraction, vector_norm, vector_division
 from Animation import Animation
+from pawn import Pawn
 
 
-class Enemy:
+class Enemy(Pawn):
     skills = None
     atk = None
     defense = None

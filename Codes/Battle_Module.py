@@ -1,14 +1,18 @@
+#! /usr/bin/env python3
+
 import threading
 import random
 
 import pygame
 import pygame_gui
 
+from grid import *
+
 import Player
 import Enemy
 
 # This class is expected to be used directly in the final work with With the modification of player_move and enemy_move
-from Codes import UI
+import UI
 
 
 class BattleManger:
@@ -107,6 +111,8 @@ def demo():
     background = pygame.transform.scale(pygame.image.load('../Assets/mario_background.png').convert(),
                                         (window_size_x, window_size_y))
     surface.blit(background, (0, 0))
+
+    grid = MapGrid(20, 10)
 
     player_group = pygame.sprite.Group()
     enemy_group = pygame.sprite.Group()
