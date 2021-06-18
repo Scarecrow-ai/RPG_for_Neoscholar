@@ -48,7 +48,8 @@ class BattleManger:
         self.selecting = character
 
     def enemy_move(self, character):
-        self.moving = character.use_skill('Swing', random.choice(self.players.sprites()))
+        self.moving = character.use_skill(random.choice(character.get_skills()))
+        character.choose_target(random.choice(self.players.sprites()))
 
     def player_select(self, player):
         if self.selecting.using_skill is None:
@@ -110,10 +111,10 @@ def demo():
     player_group = pygame.sprite.Group()
     enemy_group = pygame.sprite.Group()
 
-    player_group.add(Player.boy((1000, 300)))
-    player_group.add(Player.boy((1000, 500)))
-    enemy_group.add(Enemy.boy((300, 500)))
-    enemy_group.add(Enemy.boy((800, 500)))
+    player_group.add(Player.boy((300, 500)))
+    player_group.add(Player.boy((800, 500)))
+    enemy_group.add(Enemy.zombie((1000, 300)))
+    enemy_group.add(Enemy.zombie((1000, 500)))
 
     battle_end = False
     battleManger = BattleManger(player_group, enemy_group, gui_manager)
