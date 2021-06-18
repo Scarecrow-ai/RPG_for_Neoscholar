@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 def vector_subtraction(tuple1, tuple2):
     assert len(tuple1) == len(tuple2)
     res = ()

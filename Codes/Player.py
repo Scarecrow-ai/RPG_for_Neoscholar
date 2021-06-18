@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 # A simple demo to support Battle_Module.py, not expected to be used directly in the final work
 import pygame
 from Utils import vector_subtraction, vector_norm, vector_division

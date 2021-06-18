@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import threading
 import random
 
@@ -8,7 +10,7 @@ import Player
 import Enemy
 
 # This class is expected to be used directly in the final work with With the modification of player_move and enemy_move
-from Codes import UI
+import UI
 
 
 class BattleManger:
