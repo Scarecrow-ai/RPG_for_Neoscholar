@@ -107,9 +107,9 @@ def demo():
     gui_manager = pygame_gui.UIManager((window_size_x, window_size_y))
 
     pygame.display.set_caption('BattleDemo')
-    #background = pygame.transform.scale(pygame.image.load('../Assets/mario_background.png').convert(),
-    #                                    (window_size_x, window_size_y))
-    #surface.blit(background, (0, 0))
+    background = pygame.transform.scale(pygame.image.load('../Assets/mario_background.png').convert(),
+                                        (window_size_x, window_size_y))
+    surface.blit(background, (0, 0))
 
     grid = MapGrid(20, 10)
 

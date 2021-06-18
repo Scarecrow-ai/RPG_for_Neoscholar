@@ -1,4 +1,3 @@
-from Codes.grid import MapTile
 from grid import *
 
 class Pawn:

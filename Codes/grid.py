@@ -21,12 +21,11 @@ class MapTile:
     """
     def __init__(self, x, y) -> None:
         self.position = (x, y)
-        self.neighbors = {
-            [Dir.NORTH]: None,
-            [Dir.EAST]: None,
-            [Dir.SOUTH]: None,
-            [Dir.WEST]: None,
-        }
+        self.neighbors = {}
+        self.neighbors[Dir.NORTH] = None
+        self.neighbors[Dir.EAST] = None
+        self.neighbors[Dir.SOUTH] = None
+        self.neighbors[Dir.WEST] = None
 
 class MapGrid:
     """
@@ -35,18 +34,18 @@ class MapGrid:
     def __init__(self, w, h) -> None:
         self.size = (w, h)
         self.grid = []
-        for i in range(self.num_rows):
+        for i in range(self.size[0]):
             self.grid.append([])
-            for j in range(self.num_columns):
+            for j in range(self.size[1]):
                 self.grid[i].append(MapTile(i, j))
-        for i in range(self.num_rows):
-            for j in range(self.num_columns):
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
                 cell = self.grid[i][j]
                 if i-1 >= 0:
-                    cell.neighbours[Dir.NORTH] = self.grid[i-1][j]
-                if i+1 < self.num_rows:
-                    cell.neighbours[Dir.SOUTH] = self.grid[i+1][j]
+                    cell.neighbors[Dir.NORTH] = self.grid[i-1][j]
+                if i+1 < self.size[0]:
+                    cell.neighbors[Dir.SOUTH] = self.grid[i+1][j]
                 if j-1 >= 0:
-                    cell.neighbours[Dir.WEST] = self.grid[i][j-1]
-                if j+1 < self.num_columns:
-                    cell.neighbours[Dir.EAST] = self.grid[i][j+1]
+                    cell.neighbors[Dir.WEST] = self.grid[i][j-1]
+                if j+1 < self.size[1]:
+                    cell.neighbors[Dir.EAST] = self.grid[i][j+1]
