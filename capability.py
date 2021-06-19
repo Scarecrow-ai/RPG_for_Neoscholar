@@ -62,7 +62,7 @@ class EffectTarget:
     def get_targets(self, actor: Actor, dir: Dir):
         "Returns the targets of this EffectTarget."
         if self.use_target_func:
-            return target_func(actor)
+            return self.target_func(actor)
         if self.area_grid:
             rotated_grid = self.get_rotated_grid(dir)
             start_tile = actor.tile
@@ -93,8 +93,8 @@ class Capability:
 
     def check_trigger(self, trigger: str):
         "Fires a trigger if it exists."
-        if trigger in triggers:
-            triggers[trigger](self)
+        if trigger in self.triggers:
+            self.triggers[trigger](self)
 
     def activate(self):
         "Called when an actor activates a capability."

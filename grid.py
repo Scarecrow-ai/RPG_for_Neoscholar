@@ -58,15 +58,17 @@ class MapGrid:
                 if j + 1 < self.size[1]:
                     cell.neighbors[Dir.EAST] = self.grid[i][j + 1]
 
-    def get_pixel_pos(self, row, col):
-        "Returns the top-left pixel position of the tile of a certain row and column."
-        return (self.origin[0] + row * siz, self.origin[1] + col * siz)
+    def get_pixel_pos(self, row, col) -> tuple(int, int):
+        """Returns the top-left pixel position of the tile of a certain row and column.
+        Note that the row and column positions correspond to Y and X on the screen."""
+        return (self.origin[1] + col * self.siz, self.origin[0] + row * self.siz)
 
-    def get_tile_pos(self, tile: MapTile):
-        "Returns the top-left pixel position of a certain tile on the grid."
+    def get_tile_pos(self, tile: MapTile) -> tuple(int, int):
+        """Returns the top-left pixel position of a certain tile on the grid.
+        Note that the row and column positions correspond to Y and X on the screen."""
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 if self.grid[i][j] == tile:
-                    return (self.origin[0] + i * siz, self.origin[1] + j * siz)
+                    return (self.origin[1] + j * self.siz, self.origin[0] + i * self.siz)
         return None
         

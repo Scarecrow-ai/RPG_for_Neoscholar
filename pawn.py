@@ -18,7 +18,7 @@ class Pawn:
         # TODO sanity check
         self.tile = self.tile.neighbors[dir]
 
-    def get_pixel_pos(self):
+    def get_pixel_pos(self) -> tuple(int, int):
         "Returns the pixel position of the tile the Pawn is on."
         return self.tile.grid.get_tile_pos(self.tile)
 
@@ -27,8 +27,8 @@ class Actor(Pawn):
     An Actor is a pawn that has a set of capabilities.
     An Actor has a health value, and an alive boolean value, although not all actors can be hurt.
     """
-    self.capabilities = []
-    self.health_max = 1000
+    capabilities = []
+    health_max = 1000
 
     def __init__(self, tile: MapTile) -> None:
         self.health = self.health_max
