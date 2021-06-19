@@ -24,11 +24,15 @@ class MapTile:
     grid: "MapGrid"
     position: tuple(int, int)
     neighbors: dict(Dir, "MapTile")
+    sprites: dict
+    dirty: bool
 
     def __init__(self, x, y, grid=None) -> None:
         self.holding = None
         self.grid = grid
         self.position = (x, y)
+        self.dirty = True
+        self.sprites = {}
         self.neighbors = {}
         self.neighbors[Dir.NORTH] = None
         self.neighbors[Dir.EAST] = None
