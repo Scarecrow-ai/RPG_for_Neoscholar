@@ -8,7 +8,7 @@ class EffectTarget:
     """
     An EffectTarget determines what tiles an active capability can target.
 
-    If 'area_grid' isn't None, it is a 2D grid that shows the effect area.
+    If 'area_grid' isn't None, it is a 2D square grid that shows the effect area.
     The grid has three values, 'x' for effective area, 'o' for actor's position, and ' ' for unaffected tiles.
     For example, the following grid hits in a T shape:
     area_grid = [['x', 'x', 'x'],
@@ -22,7 +22,8 @@ class EffectTarget:
 
     If 'use_target_func' is True, instead of consulting the area_grid, the target_func is called and its targets are used.
     """
-    area_grid = None
+    area_grid = None # must be a square!
+    area_grid_size = 0
     area_directional = True
     area_multi_target = True
     area_connected = False
@@ -65,13 +66,31 @@ class EffectTarget:
             return self.target_func(actor)
         if self.area_grid:
             rotated_grid = self.get_rotated_grid(dir)
-            start_tile = actor.tile
             start_pos = self.get_start_pos()
-
+            grid_size = actor.tile.grid.size
+            
+            #   [ , , , , , , ]
+            #   [ , , x x x x ]
+            #   [ , , . x x . ]
+            #   [ , , . o . . ]
+            #   [ , , . . . . ]
+            #   actor.tile.position = (3, 3)
+            #   start_pos = (2, 1)
+            grid_row_start = max(0, actor.tile.position[0] - start_pos[0])
+            grid_row_end = min(grid_size[0], actor.tile.position[0] + (self.area_grid_size - start_pos[0]))
+            grid_col_start = max(0, actor.tile.position[1] - start_pos[1])
+            grid_col_end = min(grid_size[1], actor.tile.position[1] + (self.area_grid_size - start_pos[1]))
+            targets = []
+            for i in range(grid_row_start, grid_row_end):
+                for j in range(grid_col_start, grid_col_end):
+                    if rotated_grid[i][j] == 'x' and actor.tile.grid[i][j].holding:
+                        targets.append(actor.tile.grid[i][j].holding)
             if self.area_connected:
                 pass # TODO do some funky pathing algorithm here
-            
-            # TODO finish getting targets
+            if not self.area_multi_target and len(targets) > 1:
+                return targets[0] # return one target; TODO choose closest?
+            return targets
+                        
 
 class Capability:
     """

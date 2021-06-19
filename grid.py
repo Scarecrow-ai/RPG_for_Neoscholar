@@ -2,7 +2,6 @@
 
 from enum import Enum
 
-
 class Dir(Enum):
     "An enum representing direction on a 2D grid. Its values correspond to the direction's x/y movement."
     NORTH = (0, -1)
@@ -21,6 +20,10 @@ class MapTile:
     A MapTile has a position value, as well as its neighbors (if any exist).
     One tile can hold up to one one character.
     """
+    holding: Pawn
+    grid: MapGrid
+    position: tuple(int, int)
+    neighbors: dict(Dir, MapTile)
 
     def __init__(self, x, y, grid=None) -> None:
         self.holding = None
@@ -37,10 +40,15 @@ class MapGrid:
     """
     A MapGrid is a 2D array of MapTiles.
     """
+    origin: tuple(int, int)
+    size: tuple(int, int)
+    siz: int # pixel size of each tile (is this useful?)
+    grid: list(list(MapTile))
 
     def __init__(self, w, h, x=0, y=0, siz=32) -> None:
         self.origin = (x, y)
         self.size = (w, h)
+        self.siz = siz
         self.grid = []
         for i in range(self.size[0]):
             self.grid.append([])

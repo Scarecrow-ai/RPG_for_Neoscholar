@@ -6,6 +6,7 @@ class Pawn:
     """
     A pawn is an entity that can move on a MapGrid.
     """
+    layer = 0 # used in sprite drawing
 
     def __init__(self, tile: MapTile) -> None:
         self.tile = tile
