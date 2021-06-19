@@ -2,10 +2,9 @@
 import pygame
 from Utils import vector_subtraction, vector_norm, vector_division
 from Animation import Animation
-from pawn import Pawn
 
 
-class Enemy(Pawn):
+class Enemy:
     skills = None
     atk = None
     defense = None
@@ -36,8 +35,9 @@ class zombie(Enemy, pygame.sprite.Sprite):
     death_sprites = None
     specie = 'zombie'
     init_count = 0
+    grid = None
 
-    def __init__(self, pos):
+    def __init__(self, tile_pos, grid):
         pygame.sprite.Sprite.__init__(self)
         self.hp = self.max_hp
         self.name = zombie.specie + str(zombie.init_count)
@@ -61,13 +61,15 @@ class zombie(Enemy, pygame.sprite.Sprite):
 
             zombie.death_sprites = pygame.transform.scale(pygame.image.load('../Assets/S_Holy02.png').convert_alpha(),
                                                           (28, 44))
-
+        if zombie.grid is None:
+            zombie.grid = grid
         self.swing_animation = Animation(self, zombie.swing_sprites_surf, 6)
         self.walk_animation = Animation(self, zombie.walk_sprites_surf, 6)
         self.change_sprites(zombie.sit_sprites)
         self.mask = pygame.mask.from_surface(self.image)
         self.draw_health_bar()
-        self.rect = self.image.get_rect(center=pos)
+        self.tile = grid.tile_at(tile_pos)
+        self.rect = self.image.get_rect(center=grid.tile_to_pos(self.tile))
         self.using_skill = None
         self.skill_target = None
         self.dead = False
@@ -84,26 +86,22 @@ class zombie(Enemy, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.using_skill == 0:
-            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 50:
-                self.walk(self.skill_target, True)
+            if not self.walk(self.skill_target.tile.east):
                 return self
             else:
                 return self.swing(self.skill_target)
 
-    def walk(self, target, direction):  # direction is a bool whether character walk to target
-        if direction:
-            vector = vector_subtraction(target.rect.topleft, self.rect.topleft)
-        else:
-            vector = vector_subtraction(self.rect.topleft, target.rect.topleft)
-        self.rect.move_ip(vector_division(vector, 0.3 * vector_norm(vector)))
+    # return arrived or not
+    def walk(self, target_tile):
         animation_down, sprite_changed = self.walk_animation.play()
         if sprite_changed:
             self.face_target()
+        return self.move_to_tile(target_tile)
 
     def swing(self, target):
         return self.attack_skill(target, self.swing_animation, 1.5)
 
-    def attack_skill(self, target, animation, power, effect_sprite=None):
+    def attack_skill(self, target, animation, power):
         next_move = self
         animation_done, sprite_changed = animation.play()
         if sprite_changed:
@@ -147,6 +145,17 @@ class zombie(Enemy, pygame.sprite.Sprite):
     def face_target(self):
         if self.skill_target is not None:
             self.image = pygame.transform.flip(self.image, self.rect.left < self.skill_target.rect.left, False)
+
+    def move_to_tile(self, target_tile):
+        arrived = False
+        if self.tile.position != target_tile.position:
+            vector = vector_subtraction(zombie.grid.tile_to_pos(target_tile), zombie.grid.tile_to_pos(self.tile))
+            self.rect.move_ip(vector_division(vector, 0.3 * vector_norm(vector)))
+            self.tile = zombie.grid.pos_to_tile(self.rect.center)
+        else:
+            self.rect.center = zombie.grid.tile_to_pos(self.tile)
+            arrived = True
+        return arrived
 
     def __str__(self):
         return 'Enemy'

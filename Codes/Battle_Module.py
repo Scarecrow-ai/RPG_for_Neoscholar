@@ -112,15 +112,15 @@ def demo():
                                         (window_size_x, window_size_y))
     surface.blit(background, (0, 0))
 
-    grid = MapGrid(20, 10)
+    grid = MapGrid(30, 20)
 
     player_group = pygame.sprite.Group()
     enemy_group = pygame.sprite.Group()
 
-    player_group.add(Player.boy((300, 500)))
-    player_group.add(Player.boy((800, 500)))
-    enemy_group.add(Enemy.zombie((1000, 300)))
-    enemy_group.add(Enemy.zombie((1000, 500)))
+    player_group.add(Player.boy((8, 10), grid))
+    player_group.add(Player.boy((8, 5), grid))
+    enemy_group.add(Enemy.zombie((20, 5), grid))
+    enemy_group.add(Enemy.zombie((20, 10), grid))
 
     battle_end = False
     battleManger = BattleManger(player_group, enemy_group, gui_manager)

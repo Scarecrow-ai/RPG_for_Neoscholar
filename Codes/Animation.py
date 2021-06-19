@@ -1,6 +1,8 @@
+# play() need to be called every frames when animation is play ing
 class Animation:
     max_fps = 60
 
+    # effect_sprite will be shown on character's skill_target after character's animation finfished
     def __init__(self, character, sprites, fps, effect_sprite=None):
         self.sprites = sprites
         self.character = character

@@ -4,17 +4,16 @@
 import pygame
 from Animation import Animation
 from Utils import vector_subtraction, vector_norm, vector_division
-from pawn import Pawn
 
 
-class Player(Pawn):
+class Player:
     skills = None
     atk = None
     defense = None
     speed = None
 
     def use_skill(self, skill):  # Switch-case are not supported.
-        return self
+        pass
 
     def get_skills(self):
         return list(self.skills.keys())
@@ -38,9 +37,10 @@ class boy(Player, pygame.sprite.Sprite):
     punch_effect_sprite = None
     sit_sprites = None
     death_sprites = None
+    grid = None
     name = 'boy'
 
-    def __init__(self, pos):
+    def __init__(self, tile_pos, grid):
         pygame.sprite.Sprite.__init__(self)
         self.hp = self.max_hp
 
@@ -69,14 +69,16 @@ class boy(Player, pygame.sprite.Sprite):
             boy.punch_effect_sprite = pygame.transform.scale(
                 pygame.image.load('../Assets/S_Thunder07.png').convert_alpha(),
                 (58, 94))
+        if boy.grid is None:
+            boy.grid = grid
 
         self.swing_animation = Animation(self, boy.swing_sprites_surf, 6)
         self.punch_animation = Animation(self, boy.punch_sprites_surf, 6, effect_sprite=boy.punch_effect_sprite)
         self.walk_animation = Animation(self, boy.walk_sprites_surf, 6)
         self.change_sprites(boy.sit_sprites)
         self.mask = pygame.mask.from_surface(self.image)
-        self.draw_health_bar()
-        self.rect = self.image.get_rect(center=pos)
+        self.tile = grid.tile_at(tile_pos)
+        self.rect = self.image.get_rect(center=grid.tile_to_pos(self.tile))
         self.using_skill = None
         self.skill_target = None
         self.dead = False
@@ -93,35 +95,31 @@ class boy(Player, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.using_skill == 0:
-            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) > 50:
-                self.walk(self.skill_target, True)
+            if not self.walk(self.skill_target.tile.east):
                 return self
             else:
                 return self.swing(self.skill_target)
         if self.using_skill == 1:
-            if vector_norm(vector_subtraction(self.rect.topleft, self.skill_target.rect.topleft)) < 100:
-                self.walk(self.skill_target, False)
+            if not self.walk(boy.grid.tile_at((min(boy.grid.size[0] - 1, self.skill_target.tile.position[0] + 3),
+                                              self.skill_target.tile.position[1]))):
                 return self
             else:
                 return self.Thunder(self.skill_target)
 
-    def walk(self, target, direction):  # direction is a bool whether character walk to target
-        if direction:
-            vector = vector_subtraction(target.rect.topleft, self.rect.topleft)
-        else:
-            vector = vector_subtraction(self.rect.topleft, target.rect.topleft)
-        self.rect.move_ip(vector_division(vector, 0.3 * vector_norm(vector)))
-        animation_done, sprite_changed = self.walk_animation.play()
+    # return arrived or not
+    def walk(self, target_tile):
+        animation_down, sprite_changed = self.walk_animation.play()
         if sprite_changed:
             self.face_target()
+        return self.move_to_tile(target_tile)
 
     def swing(self, target):
         return self.attack_skill(target, self.swing_animation, 1.5)
 
     def Thunder(self, target):
-        return self.attack_skill(target, self.punch_animation, 1.0, effect_sprite=self.punch_effect_sprite)
+        return self.attack_skill(target, self.punch_animation, 1.0)
 
-    def attack_skill(self, target, animation, power, effect_sprite=None):
+    def attack_skill(self, target, animation, power):
         next_move = self
         animation_done, sprite_changed = animation.play()
         if sprite_changed:
@@ -165,6 +163,17 @@ class boy(Player, pygame.sprite.Sprite):
     def face_target(self):
         if self.skill_target is not None:
             self.image = pygame.transform.flip(self.image, self.rect.left < self.skill_target.rect.left, False)
+
+    def move_to_tile(self, target_tile):
+        arrived = False
+        if self.tile.position != target_tile.position:
+            vector = vector_subtraction(boy.grid.tile_to_pos(target_tile), boy.grid.tile_to_pos(self.tile))
+            self.rect.move_ip(vector_division(vector, 0.3 * vector_norm(vector)))
+            self.tile = boy.grid.pos_to_tile(self.rect.center)
+        else:
+            self.rect.center = boy.grid.tile_to_pos(self.tile)
+            arrived = True
+        return arrived
 
     def __str__(self):
         return 'player'
