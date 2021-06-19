@@ -22,7 +22,9 @@ class MapTile:
     One tile can hold up to one one character.
     """
 
-    def __init__(self, x, y) -> None:
+    def __init__(self, x, y, grid=None) -> None:
+        self.holding = None
+        self.grid = grid
         self.position = (x, y)
         self.neighbors = {}
         self.neighbors[Dir.NORTH] = None
@@ -36,13 +38,14 @@ class MapGrid:
     A MapGrid is a 2D array of MapTiles.
     """
 
-    def __init__(self, w, h) -> None:
+    def __init__(self, w, h, x=0, y=0, siz=32) -> None:
+        self.origin = (x, y)
         self.size = (w, h)
         self.grid = []
         for i in range(self.size[0]):
             self.grid.append([])
             for j in range(self.size[1]):
-                self.grid[i].append(MapTile(i, j))
+                self.grid[i].append(MapTile(i, j, self.grid))
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 cell = self.grid[i][j]
@@ -54,3 +57,16 @@ class MapGrid:
                     cell.neighbors[Dir.WEST] = self.grid[i][j - 1]
                 if j + 1 < self.size[1]:
                     cell.neighbors[Dir.EAST] = self.grid[i][j + 1]
+
+    def get_pixel_pos(self, row, col):
+        "Returns the top-left pixel position of the tile of a certain row and column."
+        return (self.origin[0] + row * siz, self.origin[1] + col * siz)
+
+    def get_tile_pos(self, tile: MapTile):
+        "Returns the top-left pixel position of a certain tile on the grid."
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                if self.grid[i][j] == tile:
+                    return (self.origin[0] + i * siz, self.origin[1] + j * siz)
+        return None
+        
