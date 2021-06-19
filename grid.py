@@ -20,10 +20,10 @@ class MapTile:
     A MapTile has a position value, as well as its neighbors (if any exist).
     One tile can hold up to one one character.
     """
-    holding: Pawn
-    grid: MapGrid
+    holding: "Pawn"
+    grid: "MapGrid"
     position: tuple(int, int)
-    neighbors: dict(Dir, MapTile)
+    neighbors: dict(Dir, "MapTile")
 
     def __init__(self, x, y, grid=None) -> None:
         self.holding = None
