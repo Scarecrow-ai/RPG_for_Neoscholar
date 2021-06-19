@@ -1,6 +1,62 @@
 #! /usr/lib/python3
 
 from pawn import Actor
+from grid import Dir
+import copy
+
+class EffectTarget:
+    """
+    An EffectTarget determines what tiles an active capability can target.
+
+    If 'area_grid' isn't None, it is a 2D grid that shows the effect area.
+    The grid has three values, 'x' for effective area, 'o' for actor's position, and ' ' for unaffected tiles.
+    For example, the following grid hits in a T shape:
+    area_grid = [['x', 'x', 'x'],
+                 [' ', 'x', ' '],
+                 [' ', 'o', ' ']]
+    This may be a directional attack if 'area_directional' is True (so can be rotated in 4 directions);
+    otherwise it is a radial attack and cannot be rotated. (The provided direction is assumed to be facing North)
+    If 'area_multi_target' is not True, the attack can only hit one target.
+    If 'area_connected' is not True, the attack can be blocked by the world.
+    An tile of attack is blocked if there is no connection from it to the actor in any cardinal direction.
+
+    If 'use_target_func' is True, instead of consulting the area_grid, the target_func is called and its targets are used.
+    """
+    area_grid = None
+    area_directional = True
+    area_multi_target = True
+    area_connected = False
+
+    use_target_func = False
+    def target_func(self, actor: Actor):
+        "Returns a list of targets valid for this EffectTarget."
+        pass
+
+    def get_rotated_grid(self, dir: Dir):
+        "Returns a rotated grid of this EffectTarget by a direction."
+        if not self.area_grid:
+            return None
+        elif self.area_directional:
+            rotated_grid = copy.deepcopy(self.area_grid) # Defaults to North
+            if dir == dir.WEST:
+                rotated_grid = list(zip(*rotated_grid[::-1])) # This magic looking piece of work rotates the list clockwise.
+            elif dir == dir.SOUTH:
+                rotated_grid = list(zip(*rotated_grid[::-1])) # Do it twice to do 180 degrees
+                rotated_grid = list(zip(*rotated_grid[::-1]))
+            elif dir == dir.EAST:
+                rotated_grid = list(zip(*rotated_grid))[::-1] # This rotates CCW
+            return rotated_grid
+        else:
+            return self.area_grid
+
+    def get_targets(self, actor: Actor, dir: Dir):
+        "Returns the targets of this EffectTarget."
+        if self.use_target_func:
+            return target_func(actor)
+        if self.area_grid:
+            rotated_grid = self.get_rotated_grid(dir)
+            start_tile = actor.tile
+            # TODO get targets based on area grid    
 
 class Capability:
     """
@@ -13,6 +69,7 @@ class Capability:
     is_active = False
     is_timed = False
     triggers = {}
+    effecttarget: EffectTarget = None
 
     def __init__(self, actor: Actor, intensity=0, duration=0):
         self.actor = actor
