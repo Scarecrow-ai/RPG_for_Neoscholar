@@ -49,6 +49,16 @@ class EffectTarget:
         else:
             return self.area_grid
 
+    def get_start_pos(self):
+        "Calculates, caches and returns the starting index of the area grid."
+        if not self.start_pos:
+            for i in range(len(self.area_grid)):
+                for j in range(len(self.area_grid[i])):
+                    if self.area_grid[i][j] == 'o':
+                        self.start_pos = (i, j)
+                        break
+        return self.start_pos
+
     def get_targets(self, actor: Actor, dir: Dir):
         "Returns the targets of this EffectTarget."
         if self.use_target_func:
@@ -56,7 +66,12 @@ class EffectTarget:
         if self.area_grid:
             rotated_grid = self.get_rotated_grid(dir)
             start_tile = actor.tile
-            # TODO get targets based on area grid    
+            start_pos = self.get_start_pos()
+
+            if self.area_connected:
+                pass # TODO do some funky pathing algorithm here
+            
+            # TODO finish getting targets
 
 class Capability:
     """
