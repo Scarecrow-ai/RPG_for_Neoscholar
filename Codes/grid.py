@@ -32,6 +32,10 @@ class MapTile:
         self.east = None
         self.west = None
 
+    def each_neighbor(self):
+        for tile in [self.north, self.south, self.east, self.west]:
+            yield tile
+
 
 class MapGrid:
     """
