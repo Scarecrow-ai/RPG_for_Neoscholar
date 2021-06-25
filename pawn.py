@@ -1,5 +1,6 @@
 #! /usr/lib/python3
 
+from capability import Capability
 from grid import *
 from enum import *
 from damage import *
@@ -47,6 +48,9 @@ class Actor(Pawn):
         for c in self.capabilities:
             c.check_trigger(trigger, data)
     
+    def use_capability(self, capability: Capability, data):
+        capability.activate(data)
+
     def take_damage(self, dmginfo: DamageInfo):
         "Actor takes damage from damage info. If the damage reduces the actor's health to 0 or lower, the actor is no longer alive."
         if self.alive == False:
