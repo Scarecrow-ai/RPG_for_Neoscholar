@@ -1,5 +1,6 @@
 #! /usr/lib/python3
 
+from damage import DamageInfo, DamageType
 from pawn import Actor
 from grid import Dir
 import copy
@@ -90,18 +91,29 @@ class EffectTarget:
             if not self.area_multi_target and len(targets) > 1:
                 return targets[0] # return one target; TODO choose closest?
             return targets
-                        
+
+class ET_OneAhead(EffectTarget):
+    "Hits one tile ahead."
+    area_grid = [['x', ' '],
+                 ['o', ' ']]
+    area_grid_size = 2
+    area_directional = True
+
+class ET_TwoAhead(EffectTarget):
+    "Hits two tiles ahead."
+    area_grid = [[' ', 'x', ' '],
+                 [' ', 'x', ' '],
+                 [' ', 'o', ' ']]
+    area_grid_size = 3
+    area_directional = True
 
 class Capability:
     """
-    A Capability is an attribute of an Actor.
-    A Capability has an intensity and duration value.
+    A Capability is an attribute of an Actor, and has an intensity and duration value.
     If 'is_active' is True, the capability may be used actively.
-    if 'is_timed' is True, the capability lasts a limited amount of turns. A duration of 0 indicates infinite duration.
-    A capabilities can have certain triggers, which are string phrases that cause functions to be called.
+    Capabilities can have certain triggers, which are string phrases that cause functions to be called.
     """
     is_active = False
-    is_timed = False
     triggers = {}
     effecttarget: EffectTarget = None
 
@@ -110,12 +122,12 @@ class Capability:
         self.intensity = intensity
         self.duration = duration
 
-    def check_trigger(self, trigger: str):
+    def check_trigger(self, trigger: str, data):
         "Fires a trigger if it exists."
         if trigger in self.triggers:
-            self.triggers[trigger](self)
+            self.triggers[trigger](self, data)
 
-    def activate(self):
+    def activate(self, data):
         "Called when an actor activates a capability."
         pass
 
@@ -133,16 +145,36 @@ class Capability:
 
     def advance_turn(self):
         "Handles capability duration."
-        if self.is_timed and self.duration > 0:
+        if self.duration > 0:
             self.duration -= 1
             if self.duration <= 0:
                 self.on_timeout(self.actor)
                 self.actor.capabilities.remove(self)
 
+class CAP_Attack(Capability):
+    "Active, generic attack performed by the actor. Data provided is the direction of the attack."
+    is_active = True
+    effecttarget = ET_OneAhead()
+
+    def activate(self, data: Dir):
+        targets = self.effecttarget.get_targets(self.actor, data)
+        for t in targets:
+            if t is Actor:
+                t.take_damage(DamageInfo(self.actor, self.intensity))
+
+class CAP_Thunder(Capability):
+    "Active attack that hits two tiles ahead. The attack does thunder damage."
+    is_active = True
+    effecttarget = ET_TwoAhead()
+
+    def activate(self, data: Dir):
+        targets = self.effecttarget.get_targets(self.actor, data)
+        for t in targets:
+            if t is Actor:
+                t.take_damage(DamageInfo(self.actor, self.intensity, DamageType.DMG_SHOCK))
+
 class CAP_HealthRegen(Capability):
-    """
-    This capability restores some health to the actor at the end of a turn.
-    """
+    "Restore some health to the actor at the end of a turn."
 
     def on_turn_end(self):
         self.actor.health = min(self.actor.health_max, self.actor.health + self.intensity)

@@ -1,6 +1,8 @@
 #! /usr/lib/python3
 
 from grid import *
+from enum import *
+from damage import *
 
 class Pawn:
     """
@@ -25,8 +27,7 @@ class Pawn:
 
 class Actor(Pawn):
     """
-    An Actor is a pawn that has a set of capabilities.
-    An Actor has a health value, and an alive boolean value, although not all actors can be hurt.
+    An Actor is a pawn that has a set of capabilities, and has some health and can be hurt.
     """
     capabilities = []
     health_max = 1000
@@ -34,10 +35,25 @@ class Actor(Pawn):
     def __init__(self, tile: MapTile) -> None:
         self.health = self.health_max
         self.alive = True
-    
+
     def is_alive(self) -> bool:
         return self.alive
 
     def get_active_capabilities(self):
         "Returns a list of capabilities that can be actively used."
         return [c for c in self.capabilities if c.is_active == True]
+
+    def trigger_capabilities(self, trigger: str, data):
+        for c in self.capabilities:
+            c.check_trigger(trigger, data)
+    
+    def take_damage(self, dmginfo: DamageInfo):
+        "Actor takes damage from damage info. If the damage reduces the actor's health to 0 or lower, the actor is no longer alive."
+        if self.alive == False:
+            return
+
+        self.trigger_capabilities("OnTakeDamage", dmginfo)
+
+        self.health = self.health - dmginfo.damage
+        if self.health <= 0:
+            self.alive = False
