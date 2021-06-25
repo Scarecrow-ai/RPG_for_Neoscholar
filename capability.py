@@ -1,9 +1,7 @@
 #! /usr/lib/python3
 
-from damage import DamageInfo, DamageType
-from pawn import Actor
-from grid import Dir
-import copy
+from damage import *
+import pawn, grid, copy
 
 class EffectTarget:
     """
@@ -30,44 +28,43 @@ class EffectTarget:
     area_connected = False
 
     use_target_func = False
-    def target_func(self, actor: Actor):
+    def target_func(self, actor: pawn.Actor):
         "Returns a list of targets valid for this EffectTarget."
         pass
 
-    def get_rotated_grid(self, dir: Dir):
+    def get_rotated_grid(self, dir: grid.Dir):
         "Returns a rotated grid of this EffectTarget by a direction."
         if not self.area_grid:
             return None
         elif self.area_directional:
             rotated_grid = copy.deepcopy(self.area_grid) # Defaults to North
-            if dir == dir.WEST:
+            if dir == grid.Dir.WEST:
                 rotated_grid = list(zip(*rotated_grid[::-1])) # This magic looking piece of work rotates the list clockwise.
-            elif dir == dir.SOUTH:
+            elif dir == grid.Dir.SOUTH:
                 rotated_grid = list(zip(*rotated_grid[::-1])) # Do it twice to do 180 degrees
                 rotated_grid = list(zip(*rotated_grid[::-1]))
-            elif dir == dir.EAST:
+            elif dir == grid.Dir.EAST:
                 rotated_grid = list(zip(*rotated_grid))[::-1] # This rotates CCW
             return rotated_grid
         else:
             return self.area_grid
 
-    def get_start_pos(self):
+    @staticmethod
+    def get_start_pos(area_grid):
         "Calculates, caches and returns the starting index of the area grid."
-        if not self.start_pos:
-            for i in range(len(self.area_grid)):
-                for j in range(len(self.area_grid[i])):
-                    if self.area_grid[i][j] == 'o':
-                        self.start_pos = (i, j)
-                        break
-        return self.start_pos
+        for i in range(len(area_grid)):
+            for j in range(len(area_grid[i])):
+                if area_grid[i][j] == 'o':
+                    return (i, j)
+        return None
 
-    def get_targets(self, actor: Actor, dir: Dir):
+    def get_targets(self, actor: pawn.Actor, dir: grid.Dir):
         "Returns the targets of this EffectTarget."
         if self.use_target_func:
             return self.target_func(actor)
         if self.area_grid:
             rotated_grid = self.get_rotated_grid(dir)
-            start_pos = self.get_start_pos()
+            start_pos = self.get_start_pos(rotated_grid)
             grid_size = actor.tile.grid.size
             
             #   [ , , , , , , ]
@@ -77,15 +74,19 @@ class EffectTarget:
             #   [ , , . . . . ]
             #   actor.tile.position = (3, 3)
             #   start_pos = (2, 1)
-            grid_row_start = max(0, actor.tile.position[0] - start_pos[0])
-            grid_row_end = min(grid_size[0], actor.tile.position[0] + (self.area_grid_size - start_pos[0]))
-            grid_col_start = max(0, actor.tile.position[1] - start_pos[1])
-            grid_col_end = min(grid_size[1], actor.tile.position[1] + (self.area_grid_size - start_pos[1]))
+            grid_row_start = actor.tile.position[0] - start_pos[0]
+            grid_row_end = actor.tile.position[0] + (self.area_grid_size - start_pos[0])
+            grid_col_start = actor.tile.position[1] - start_pos[1]
+            grid_col_end = actor.tile.position[1] + (self.area_grid_size - start_pos[1])
+            # print(rotated_grid)
+            # print(f"actor.tile.position = {actor.tile.position}, start_pos = {start_pos}")
+            # print(f"grid_row: {grid_row_start}-{grid_row_end}; grid_col: {grid_col_start}-{grid_col_end}")
             targets = []
-            for i in range(grid_row_start, grid_row_end):
-                for j in range(grid_col_start, grid_col_end):
-                    if rotated_grid[i][j] == 'x' and actor.tile.grid[i][j].holding:
-                        targets.append(actor.tile.grid[i][j].holding)
+            for i in range(max(0, grid_row_start), min(grid_size[0], grid_row_end)):
+                for j in range(max(0, grid_col_start), min(grid_size[1], grid_col_end)):
+                    # print(f"[{rotated_grid[i - grid_row_start][j - grid_col_start]}]({i}, {j}): {actor.tile.grid.grid[i][j].holding}")
+                    if rotated_grid[i - grid_row_start][j - grid_col_start] == 'x' and actor.tile.grid.grid[i][j].holding:
+                        targets.append(actor.tile.grid.grid[i][j].holding)
             if self.area_connected:
                 pass # TODO do some funky pathing algorithm here
             if not self.area_multi_target and len(targets) > 1:
@@ -117,7 +118,7 @@ class Capability:
     triggers = {}
     effecttarget: EffectTarget = None
 
-    def __init__(self, actor: Actor, intensity=0, duration=0):
+    def __init__(self, actor: pawn.Actor, intensity=0, duration=0):
         self.actor = actor
         self.intensity = intensity
         self.duration = duration
@@ -156,22 +157,27 @@ class CAP_Attack(Capability):
     is_active = True
     effecttarget = ET_OneAhead()
 
-    def activate(self, data: Dir):
+    def activate(self, data: grid.Dir):
+        print(f"{self.actor.name} attacks {data.name}!")
         targets = self.effecttarget.get_targets(self.actor, data)
+        dmg = DamageInfo(self.actor, self.intensity)
         for t in targets:
-            if t is Actor:
-                t.take_damage(DamageInfo(self.actor, self.intensity))
+            print(f"{t}, {isinstance(t, pawn.Actor)}")
+            if isinstance(t, pawn.Actor):
+                t.take_damage(dmg)
 
 class CAP_Thunder(Capability):
     "Active attack that hits two tiles ahead. The attack does thunder damage."
     is_active = True
     effecttarget = ET_TwoAhead()
 
-    def activate(self, data: Dir):
+    def activate(self, data: grid.Dir):
+        print(f"{self.actor.name} casts thunder {data.name}!")
         targets = self.effecttarget.get_targets(self.actor, data)
+        dmg = DamageInfo(self.actor, self.intensity, DamageType.DMG_SHOCK)
         for t in targets:
-            if t is Actor:
-                t.take_damage(DamageInfo(self.actor, self.intensity, DamageType.DMG_SHOCK))
+            if isinstance(t, pawn.Actor):
+                t.take_damage(dmg)
 
 class CAP_HealthRegen(Capability):
     "Restore some health to the actor at the end of a turn."

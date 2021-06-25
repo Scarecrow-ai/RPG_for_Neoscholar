@@ -20,12 +20,12 @@ class MapTile:
     A MapTile has a position value, as well as its neighbors (if any exist).
     One tile can hold up to one one character.
     """
-    holding: "Pawn"
-    grid: "MapGrid"
-    position: tuple(int, int)
-    neighbors: dict(Dir, "MapTile")
-    sprites: dict
-    dirty: bool
+    # holding: "Pawn"
+    # grid: "MapGrid"
+    # position: tuple((int, int))
+    # neighbors: dict((Dir, "MapTile"))
+    # sprites: dict
+    # dirty: bool
 
     def __init__(self, x, y, grid=None) -> None:
         self.holding = None
@@ -39,15 +39,23 @@ class MapTile:
         self.neighbors[Dir.SOUTH] = None
         self.neighbors[Dir.WEST] = None
 
+    def get_empty_neighbors(self) -> list("MapTile"):
+        "Returns a list of empty and valid neighbors."
+        res = []
+        for v in self.neighbors.values():
+            if v != None and v.holding == None:
+                res.append(v)
+        return res
+
 
 class MapGrid:
     """
     A MapGrid is a 2D array of MapTiles.
     """
-    origin: tuple(int, int)
-    size: tuple(int, int)
-    siz: int # pixel size of each tile (is this useful?)
-    grid: list(list(MapTile))
+    # origin: tuple(int, int)
+    # size: tuple(int, int)
+    # siz: int # pixel size of each tile (is this useful?)
+    # grid: list(list(MapTile))
 
     def __init__(self, w, h, x=0, y=0, siz=32) -> None:
         self.origin = (x, y)
@@ -57,7 +65,7 @@ class MapGrid:
         for i in range(self.size[0]):
             self.grid.append([])
             for j in range(self.size[1]):
-                self.grid[i].append(MapTile(i, j, self.grid))
+                self.grid[i].append(MapTile(i, j, self))
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 cell = self.grid[i][j]
@@ -70,12 +78,12 @@ class MapGrid:
                 if j + 1 < self.size[1]:
                     cell.neighbors[Dir.EAST] = self.grid[i][j + 1]
 
-    def get_pixel_pos(self, row, col) -> tuple(int, int):
+    def get_pixel_pos(self, row, col): # -> tuple(int, int):
         """Returns the top-left pixel position of the tile of a certain row and column.
         Note that the row and column positions correspond to Y and X on the screen."""
         return (self.origin[1] + col * self.siz, self.origin[0] + row * self.siz)
 
-    def get_tile_pos(self, tile: MapTile) -> tuple(int, int):
+    def get_tile_pos(self, tile: MapTile): # -> tuple(int, int):
         """Returns the top-left pixel position of a certain tile on the grid.
         Note that the row and column positions correspond to Y and X on the screen."""
         for i in range(self.size[0]):
