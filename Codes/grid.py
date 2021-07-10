@@ -31,6 +31,7 @@ class MapTile:
         self.south = None
         self.east = None
         self.west = None
+        self.obj_on = []
 
     def each_neighbor(self):
         for tile in [self.north, self.south, self.east, self.west]:

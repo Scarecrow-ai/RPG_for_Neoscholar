@@ -4,26 +4,19 @@ import pygame
 import pygame_gui
 
 
-def get_skills_button(x, y, player, manager):
-    buttons = []
-    skill_list = player.get_skills()
-    for i in range(0, len(skill_list)):
-        buttons.append(skill_button(x, y+50*i, skill_list[i], player, manager))
-    return buttons
-
-
-def get_target_button(x, y, player, manager, enemy_group: pygame.sprite.Group):
-    buttons = []
-    enemy_list = enemy_group.sprites()
-    for i in range(0, len(enemy_list)):
-        buttons.append(target_button(x, y+50*i, enemy_list[i], player, manager))
-    return buttons
-
-
-class skill_button(pygame_gui.elements.UIButton):
-    def __init__(self, x, y, skill_name, player, manager):
-        pygame_gui.elements.UIButton.__init__(self, relative_rect=pygame.Rect((x, y), (100, 50)), text=skill_name,
+class Callback_button(pygame_gui.elements.UIButton):
+    def __init__(self, size, text, manager, pos=(0, 0)):
+        pygame_gui.elements.UIButton.__init__(self, relative_rect=pygame.Rect(pos, size), text=text,
                                               manager=manager)
+        self.size = size
+
+    def press(self):
+        pass
+
+
+class Skill_callback_button(Callback_button):
+    def __init__(self, skill_name, player, manager, pos=(0, 0)):
+        Callback_button.__init__(self, (100, 50), skill_name, manager, pos=pos)
         self.player = player
         self.skill_name = skill_name
 
@@ -31,12 +24,76 @@ class skill_button(pygame_gui.elements.UIButton):
         self.player.use_skill(self.skill_name)
 
 
-class target_button(pygame_gui.elements.UIButton):
-    def __init__(self, x, y, target, player, manager):
-        pygame_gui.elements.UIButton.__init__(self, relative_rect=pygame.Rect((x, y), (100, 50)), text=target.name,
-                                              manager=manager)
+class Target_callback_button(Callback_button):
+    def __init__(self, target, player, manager, pos=(0, 0)):
+        Callback_button.__init__(self, (100, 50), target.name, manager, pos=pos)
         self.player = player
         self.target = target
 
     def press(self):
         self.player.choose_target(self.target)
+
+
+class Task_callback_button(Callback_button):
+    def __init__(self, task, task_manager, manager, pos=(0, 0)):
+        Callback_button.__init__(self, (100, 50), task.name, manager, pos=pos)
+        self.task = task
+        self.task_Manager = task_manager
+
+    def press(self):
+        self.task_Manager.add_task(self.task)
+
+
+class Button_list:
+    def __init__(self, buttons: list, pos, horizontal=True):
+        self.buttons = buttons
+        self.pos = pos
+        self.horizontal = horizontal
+        self.__update_buttons__()
+
+    def set_pos(self, pos):
+        self.pos = pos
+        self.__update_buttons__()
+
+    def __update_buttons__(self):
+        x, y = self.pos
+        if self.horizontal:
+            for button in self.buttons:
+                assert isinstance(button, Callback_button)
+                button.set_position((x, y))
+                x += button.size[0]
+        else:
+            for button in self.buttons:
+                assert isinstance(button, Callback_button)
+                button.set_position((x, y))
+                y += button.size[1]
+
+    def kill(self):
+        while self.buttons:
+            button = self.buttons[0]
+            self.buttons.remove(button)
+            button.kill()
+        del self
+
+
+def get_skills_button(x, y, player, manager):
+    buttons = []
+    skill_list = player.get_skills()
+    for i in range(0, len(skill_list)):
+        buttons.append(Skill_callback_button(skill_list[i], player, manager))
+    return Button_list(buttons, (x, y), horizontal=False)
+
+
+def get_target_button(x, y, player, manager, enemy_group: pygame.sprite.Group):
+    buttons = []
+    enemy_list = enemy_group.sprites()
+    for i in range(0, len(enemy_list)):
+        buttons.append(Target_callback_button(enemy_list[i], player, manager))
+    return Button_list(buttons, (x, y), horizontal=False)
+
+
+def get_task_button(x, y, manager, tasks, task_Manager):
+    buttons = []
+    for task in tasks:
+        buttons.append(Task_callback_button(task, task_Manager, manager))
+    return Button_list(buttons, (x, y), horizontal=True)

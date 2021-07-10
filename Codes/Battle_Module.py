@@ -1,9 +1,6 @@
-#! /usr/bin/env python3
-
+import sys
 import threading
 import random
-
-import pygame
 import pygame_gui
 
 from grid import *
@@ -18,17 +15,21 @@ import UI
 class BattleManger:
     _instance_lock = threading.Lock()
 
-    def __init__(self, players, enemies, gui_manager):
+    def __init__(self, players, enemy_team, gui_manager, surface, background, world_Manager):
         self.gui_manager = gui_manager
         self.players = players
-        self.enemies = enemies
+        self.enemy_team = enemy_team
+        self.enemies = enemy_team.members
         self.moving = None  # A character is moving
-        self.characters = players.sprites() + enemies.sprites()
+        self.characters = players.sprites() + self.enemies.sprites()
         self.characters.sort(key=lambda character: character.speed, reverse=True)
         self.next_character = 0
         self.selecting = False
         self.targetButtons = None
         self.skillButtons = None
+        self.surface = surface
+        self.background = background
+        self.world_Manager = world_Manager
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(BattleManger, "_instance"):
@@ -37,23 +38,29 @@ class BattleManger:
                     BattleManger._instance = object.__new__(cls)
         return BattleManger._instance
 
-    def update(self):
+    def update(self, time_delta):
         if self.selecting:
             self.player_select(self.selecting)
         elif self.moving:
-            self.moving = self.moving.update()
+            self.moving = self.moving.battle_update()
         else:
             self.check_corpse()
-            if not self.enemies.sprites() or not self.players.sprites():
-                return True
             self.change_character()
+
+        self.check_events()
+        self.gui_manager.update(time_delta)
+        self.draw()
+        if not self.enemies.sprites() or not self.players.sprites():
+            return self.battle_end()
+        else:
+            return self
 
     def player_move(self, character):
         self.selecting = character
 
     def enemy_move(self, character):
         self.moving = character.use_skill(random.choice(character.get_skills()))
-        character.choose_target(random.choice(self.players.sprites()))
+        character.choose_target(self.players.sprites()[len(self.players.sprites()) - 1])
 
     def player_select(self, player):
         if self.selecting.using_skill is None:
@@ -61,15 +68,13 @@ class BattleManger:
                 self.skillButtons = UI.get_skills_button(1000, 100, self.selecting, self.gui_manager)
         elif self.selecting.skill_target is None:
             if self.skillButtons is not None:
-                for button in self.skillButtons:
-                    button.kill()
+                self.skillButtons.kill()
                 self.skillButtons = None
             if self.targetButtons is None:
                 self.targetButtons = UI.get_target_button(1000, 100, self.selecting, self.gui_manager, self.enemies)
         else:
             if self.targetButtons is not None:
-                for button in self.targetButtons:
-                    button.kill()
+                self.targetButtons.kill()
                 self.targetButtons = None
             self.moving = self.selecting
             self.selecting = None
@@ -97,84 +102,29 @@ class BattleManger:
         else:
             self.enemy_move(character)
 
+    def battle_end(self):
+        self.world_Manager.remove_npc(self.enemy_team)
+        return self.world_Manager.load_World()
 
-# A simple function to run the demo, not expected to be used directly in the final work
-def demo():
-    pygame.init()
-    window_size_x = 1280
-    window_size_y = 720
-    surface = pygame.display.set_mode([window_size_x, window_size_y])
+    def draw(self):
+        self.surface.blit(self.background, (0, 0))
+        self.players.draw(self.surface)
+        self.enemies.draw(self.surface)
+        self.gui_manager.draw_ui(self.surface)
 
-    gui_manager = pygame_gui.UIManager((window_size_x, window_size_y))
+    def check_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            self.gui_manager.process_events(event)
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    event.ui_element.press()
 
-    pygame.display.set_caption('BattleDemo')
-    background = pygame.transform.scale(pygame.image.load('../Assets/mario_background.png').convert(),
-                                        (window_size_x, window_size_y))
+
+def init_battle(window_size, surface, player_group, enemy_group, world_Manager):
+    battle_gui_manager = pygame_gui.UIManager(window_size)
+    background = pygame.transform.scale(pygame.image.load('../Assets/BackGround.jpg').convert(), window_size)
     surface.blit(background, (0, 0))
-
-    grid = MapGrid(30, 20)
-
-    player_group = pygame.sprite.Group()
-    enemy_group = pygame.sprite.Group()
-
-    player_group.add(Player.boy((8, 10), grid))
-    player_group.add(Player.boy((8, 5), grid))
-    enemy_group.add(Enemy.zombie((20, 5), grid))
-    enemy_group.add(Enemy.zombie((20, 10), grid))
-
-    battle_end = False
-    battleManger = BattleManger(player_group, enemy_group, gui_manager)
-
-    clock = pygame.time.Clock()
-
-    while not battle_end:
-        time_delta = clock.tick(60) / 1000
-        quit, click, click2 = check_events(gui_manager)
-        if quit:
-            break
-        if click:
-            pass
-        if click2:
-            pass
-
-        battle_end = battleManger.update()
-        gui_manager.update(time_delta)
-
-        surface.blit(background, (0, 0))
-        player_group.draw(surface)
-        enemy_group.draw(surface)
-
-        gui_manager.draw_ui(surface)
-        pygame.display.update()
-
-
-def check_events(gui_manager):
-    ''' A controller of sorts.  Looks for Quit, several simple events.
-        Returns: True/False for if a Quit event happened.
-    '''
-
-    quit = False
-    click = click2 = None
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            quit = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q:
-                quit = True
-            if event.key == pygame.K_ESCAPE:
-                quit = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
-                click = event.pos
-            if event.button == 3:
-                click2 = event.pos
-        gui_manager.process_events(event)
-        if event.type == pygame.USEREVENT:
-            if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                event.ui_element.press()
-    return quit, click, click2
-
-
-if __name__ == '__main__':
-    demo()
+    battleManger = BattleManger(player_group, enemy_group, battle_gui_manager, surface, background, world_Manager)
+    return battleManger

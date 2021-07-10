@@ -26,9 +26,13 @@ class Animation:
                     target = self.character.skill_target
                     target.change_sprites(self.effect_sprite)
                     self.effect_down = True
-                else:
+                elif self.effect_down:
                     target = self.character.skill_target
                     target.sit()
+                    self.effect_down = False
+                    self.pic_count = 0
+                    animation_done = True
+                else:
                     self.effect_down = False
                     self.pic_count = 0
                     animation_done = True
