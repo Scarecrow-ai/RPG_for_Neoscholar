@@ -42,6 +42,7 @@ class Task_callback_button(Callback_button):
 
     def press(self):
         self.task_Manager.add_task(self.task)
+        self.kill()
 
 
 class Button_list:
@@ -74,6 +75,38 @@ class Button_list:
             self.buttons.remove(button)
             button.kill()
         del self
+
+
+class task_display(pygame_gui.elements.ui_text_box.UITextBox):
+    def __init__(self, tasks, gui_manager):
+        html_text = self.get_html_text(tasks)
+        pos = (1150, 10)
+        size = (100, 200)
+        pygame_gui.elements.ui_text_box.UITextBox.__init__(self, html_text, pygame.Rect(pos, size), gui_manager)
+
+    def update_text(self, tasks):
+        self.html_text = self.get_html_text(tasks)
+
+    def get_html_text(self, tasks):
+        html_text = ''
+        # todo
+        return html_text
+
+
+class plot_display(pygame_gui.elements.ui_text_box.UITextBox):
+    def __init__(self, text, gui_manager):
+        html_text = self.get_html_text(text)
+        pos = (370, 600)
+        size = (500, 100)
+        pygame_gui.elements.ui_text_box.UITextBox.__init__(self, html_text, pygame.Rect(pos, size), gui_manager)
+
+    def get_html_text(self, text):
+        html_text = ''
+        # todo
+        return html_text
+
+    def update_text(self, text):
+        self.html_text = self.get_html_text(text)
 
 
 def get_skills_button(x, y, player, manager):

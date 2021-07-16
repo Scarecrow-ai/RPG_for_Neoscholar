@@ -60,7 +60,7 @@ class BattleManger:
 
     def enemy_move(self, character):
         self.moving = character.use_skill(random.choice(character.get_skills()))
-        character.choose_target(self.players.sprites()[len(self.players.sprites()) - 1])
+        character.choose_target(random.choice(self.players.sprites()))
 
     def player_select(self, player):
         if self.selecting.using_skill is None:
@@ -89,6 +89,7 @@ class BattleManger:
             if character.is_dead():
                 self.enemies.remove(character)
                 self.characters.remove(character)
+                self.world_Manager.update_task(character)
                 character.kill()
 
     def change_character(self):

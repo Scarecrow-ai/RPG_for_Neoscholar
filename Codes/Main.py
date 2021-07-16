@@ -9,19 +9,24 @@ import Task
 
 def init_characters(grid):
     player_group = pygame.sprite.Group()
-    enemy_group = pygame.sprite.Group()
+    enemy_group1 = pygame.sprite.Group()
 
     player_group.add(Player.boy((5, 10), grid))
     player_group.add(Player.boy((8, 10), grid))
-    enemy_group.add(Enemy.zombie((20, 10), grid))
-    enemy_group.add(Enemy.zombie((18, 10), grid))
+    enemy_group1.add(Enemy.zombie((20, 10), grid))
+    enemy_group1.add(Enemy.zombie((18, 10), grid))
+
+    enemy_group2 = pygame.sprite.Group()
+    enemy_group2.add(Enemy.zombie((20, 10), grid))
+    enemy_group2.add(Enemy.zombie((18, 10), grid))
 
     player_team = Player.Player_team(player_group, (5, 10), grid)
-    enemies_team = Enemy.Enemies_team(enemy_group, (10, 10), grid)
+    enemies_team = Enemy.Enemies_team(enemy_group1, (10, 10), grid)
 
     npc_teams = pygame.sprite.Group()
     npc_teams.add(enemies_team)
-    tasks = [Task.Task('kill monster', ''), Task.Task('collect', '')]
+    npc_teams.add(Enemy.Enemies_team(enemy_group2, (15, 5), grid))
+    tasks = [Task.Battle_Task('kill monster', 'zombie', 2), Task.Task('collect', '')]
     npc_teams.add(Npc.Task_npc((20, 10), grid, tasks))
 
     return player_team, npc_teams

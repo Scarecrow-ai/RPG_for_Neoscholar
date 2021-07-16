@@ -5,6 +5,7 @@ from Battle_Module import init_battle
 import pygame.sprite
 import pygame_gui
 
+import UI
 from grid import *
 
 import Enemy
@@ -22,8 +23,10 @@ class WorldManger:
         self.npc_teams = npc_teams
         self.surface = surface
         self.background = background
-        self.task_Manager = Task.Task_Manager()
+        self.task_Manager = Task.Task_Manager(gui_manager)
         self.player_collision = None
+        self.plot_display = UI.plot_display('', gui_manager)
+        # self.plot_display.hide()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(WorldManger, "_instance"):
@@ -31,6 +34,10 @@ class WorldManger:
                 if not hasattr(WorldManger, "_instance"):
                     WorldManger._instance = object.__new__(cls)
         return WorldManger._instance
+
+    def show_plot(self, text):
+        self.plot_display.update_text(text)
+        self.plot_display.show()
 
     def update(self, time_delta):
         gameManager = self
@@ -86,6 +93,9 @@ class WorldManger:
 
     def remove_npc(self, npc):
         self.npc_teams.remove(npc)
+
+    def update_task(self, target):
+        self.task_Manager.update_all_task(target)
 
 
 def init_world(window_size, surface, player_team, enemy_group):
