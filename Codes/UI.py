@@ -46,6 +46,14 @@ class Task_callback_button(Callback_button):
         self.npc.remove_task(self.task)
         self.kill()
 
+class Skip_callback_button(Callback_button):
+    def __init__(self, bm, manager, pos=(0, 0)):
+        Callback_button.__init__(self, (100, 50), "Skip Moving", manager, pos=pos)
+        self.bm = bm
+
+    def press(self):
+        self.bm.stepsleft = 0
+
 class Button_list:
     def __init__(self, buttons: list, pos, horizontal=True):
         self.buttons = buttons
@@ -148,3 +156,8 @@ def get_task_button(x, y, manager, tasks, task_Manager, npc):
     for task in tasks:
         buttons.append(Task_callback_button(task, task_Manager, manager, npc))
     return Button_list(buttons, (x, y), horizontal=True)
+
+def get_skip_button(x, y, bm, manager):
+    buttons = []
+    buttons.append(Skip_callback_button(bm, manager))
+    return Button_list(buttons, (x, y), horizontal=False)

@@ -64,9 +64,12 @@ class BattleManger:
         character.choose_target(random.choice(self.players.sprites()))
 
     def player_select(self, player):
-        if self.selecting.goal_tile is not None:
-            self.selecting.battle_update()
-        if self.selecting.using_skill is None:
+        if self.stepsleft > 0 or self.selecting.goal_tile:
+            if self.skillButtons is None:
+                self.skillButtons = UI.get_skip_button(1000, 100, self, self.gui_manager)
+            if self.selecting.goal_tile is not None:
+                self.selecting.battle_update()
+        elif self.selecting.using_skill is None:
             if self.skillButtons is None:
                 self.skillButtons = UI.get_skills_button(1000, 100, self.selecting, self.gui_manager)
         elif self.selecting.skill_target is None:

@@ -3,7 +3,7 @@ import Level
 
 
 def Main():
-    pygame.mixer.init()
+    #pygame.mixer.init()
     pygame.init()
     window_size_x = 1280
     window_size_y = 720
