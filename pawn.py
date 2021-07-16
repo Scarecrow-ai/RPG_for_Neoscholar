@@ -1,5 +1,6 @@
 #! /usr/lib/python3
 
+import pygame
 from enum import *
 import grid, damage as dmg
 
@@ -33,17 +34,47 @@ class Pawn:
         "Returns the pixel position of the tile the Pawn is on."
         return self.tile.grid.get_tile_pos(self.tile)
 
-class Actor(Pawn):
+class Actor(Pawn, pygame.sprite.Sprite):
     """
     An Actor is a pawn that has a set of capabilities, and has some health and can be hurt.
+    Actors inherit Sprites.
     """
     capabilities = []
     health_max = 1000
+    speed = 1
+    sprites = {}
+
+    def sprite_setup(self):
+        self.sprites_walk = [
+            pygame.transform.scale(pygame.image.load('Assets/步行1_0_0.png').convert_alpha(), (29, 47)),
+            pygame.transform.scale(pygame.image.load('Assets/步行1_1_1.png').convert_alpha(), (29, 47)),
+            pygame.transform.scale(pygame.image.load('Assets/步行1_2_2.png').convert_alpha(), (29, 47)),
+            pygame.transform.scale(pygame.image.load('Assets/步行1_3_3.png').convert_alpha(), (29, 47))
+        ]
+        self.sprites_swing = [
+            pygame.transform.scale(pygame.image.load('Assets/swingT1_0_16.png').convert_alpha(), (50, 46)),
+            pygame.transform.scale(pygame.image.load('Assets/swingT1_1_17.png').convert_alpha(), (71, 63)),
+            pygame.transform.scale(pygame.image.load('Assets/swingT1_2_18.png').convert_alpha(), (75, 79))
+        ]
+        self.sprites_punch = [
+                pygame.transform.scale(pygame.image.load('Assets/容易刺_0_32.png').convert_alpha(), (50, 46)),
+                pygame.transform.scale(pygame.image.load('Assets/容易刺_1_33.png').convert_alpha(), (71, 63)),
+        ]
+        self.sprites_death = [pygame.transform.scale(pygame.image.load('Assets/S_Holy02.png').convert_alpha(), (28, 44))],
+        self.sprites_sit = [pygame.transform.scale(pygame.image.load('Assets/sit_0.png').convert_alpha(), (28, 44))]
 
     def __init__(self, name: str, tile: grid.MapTile) -> None:
-        super().__init__(name, tile)
+        Pawn.__init__(self, name, tile)
+        pygame.sprite.Sprite.__init__(self)
+
         self.health = self.health_max
         self.alive = True
+        self.sprite_setup()
+        self.change_sprites(self.sprites_sit[0])
+        self.rect = self.image.get_rect(center=tile.grid.get_tile_pos(self.tile))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.using_skill = None
+        self.skill_target = None
 
     def is_alive(self) -> bool:
         return self.alive
@@ -73,3 +104,16 @@ class Actor(Pawn):
         if self.health <= 0:
             self.alive = False
             print(f"{self.name} died!")
+
+    def change_sprites(self, sprites):
+        length, height = sprites.get_size()
+        height += 10
+        self.image = pygame.Surface((length, height), pygame.SRCALPHA)
+        self.draw_health_bar()
+        self.image.blit(sprites, (0, 10), (0, 0, length, height))
+
+    def draw_health_bar(self):
+        pygame.draw.rect(self.image, (0, 0, 0), (0, 0, 22, 10), 1)
+        pygame.draw.rect(self.image, (0, 128, 0), (1, 1, int(self.health / self.health_max * 20), 8))
+        pygame.draw.rect(self.image, (255, 0, 0),
+                         (int(self.health / self.health_max * 20) + 1, 1, int((self.health_max - self.health) / self.health_max * 20), 8))

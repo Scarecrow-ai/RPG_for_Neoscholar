@@ -154,6 +154,7 @@ class Capability:
 
 class CAP_Attack(Capability):
     "Active, generic attack performed by the actor. Data provided is the direction of the attack."
+    name = "Attack"
     is_active = True
     effecttarget = ET_OneAhead()
 
@@ -168,6 +169,7 @@ class CAP_Attack(Capability):
 
 class CAP_Thunder(Capability):
     "Active attack that hits two tiles ahead. The attack does thunder damage."
+    name = "Thunder"
     is_active = True
     effecttarget = ET_TwoAhead()
 
