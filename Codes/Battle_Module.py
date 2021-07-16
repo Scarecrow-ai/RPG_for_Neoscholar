@@ -20,6 +20,7 @@ class BattleManger:
         self.players = players
         self.enemy_team = enemy_team
         self.enemies = enemy_team.members
+        self.stepsleft = 0
         self.moving = None  # A character is moving
         self.characters = players.sprites() + self.enemies.sprites()
         self.characters.sort(key=lambda character: character.speed, reverse=True)
@@ -63,6 +64,8 @@ class BattleManger:
         character.choose_target(random.choice(self.players.sprites()))
 
     def player_select(self, player):
+        if self.selecting.goal_tile is not None:
+            self.selecting.battle_update()
         if self.selecting.using_skill is None:
             if self.skillButtons is None:
                 self.skillButtons = UI.get_skills_button(1000, 100, self.selecting, self.gui_manager)
@@ -99,6 +102,7 @@ class BattleManger:
         self.next_character += 1
         assert isinstance(character, Player.Player) or isinstance(character, Enemy.Enemy)
         if isinstance(character, Player.Player):
+            self.stepsleft = 10
             self.player_move(character)
         else:
             self.enemy_move(character)
@@ -121,6 +125,20 @@ class BattleManger:
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     event.ui_element.press()
+            if event.type == pygame.KEYDOWN and self.selecting and self.stepsleft > 0 and not self.selecting.goal_tile:
+                self.stepsleft -= 1
+                if event.key == pygame.K_w:
+                    self.selecting.goal_tile = self.selecting.tile.north
+                    #self.selecting.walk(self.selecting.tile.north)
+                elif event.key == pygame.K_s:
+                    self.selecting.goal_tile = self.selecting.tile.south
+                    #self.selecting.walk(self.selecting.tile.south)
+                elif event.key == pygame.K_a:
+                    self.selecting.goal_tile = self.selecting.tile.west
+                    #self.selecting.walk(self.selecting.tile.west)
+                elif event.key == pygame.K_d:
+                    self.selecting.goal_tile = self.selecting.tile.east
+                    #self.selecting.walk(self.selecting.tile.east)
 
 
 def init_battle(window_size, surface, player_group, enemy_group, world_Manager):

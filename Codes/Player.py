@@ -157,6 +157,7 @@ class boy(Player, pygame.sprite.Sprite):
         self.using_skill = None
         self.skill_target = None
         self.dead = False
+        self.goal_tile = None
 
     def use_skill(self, skill):  # Switch-case are not supported.
         self.using_skill = self.skills[skill]
@@ -169,6 +170,20 @@ class boy(Player, pygame.sprite.Sprite):
     def battle_update(self):
         if self.dead:
             return None
+        if self.goal_tile is not None:
+            i = 1
+            target_tile = boy.grid.tile_at((min(boy.grid.size[0] - 1, self.goal_tile.position[0] + i),self.goal_tile.position[1]))
+            while len(target_tile.obj_on) != 0 and not (len(target_tile.obj_on) == 1 and self in target_tile.obj_on):
+                i -= 1
+                target_tile = boy.grid.tile_at((min(boy.grid.size[0] - 1, self.goal_tile.position[0] + i),
+                                                self.goal_tile.position[1]))
+            if not self.walk(target_tile, False):
+                return self
+            else:
+                self.goal_tile = None
+                if self not in self.tile.obj_on:
+                    self.tile.obj_on.append(self)
+                    return True
         if self.using_skill == 0:
             i = 1
             target_tile = boy.grid.tile_at((min(boy.grid.size[0] - 1, self.skill_target.tile.position[0] + i),
@@ -199,7 +214,7 @@ class boy(Player, pygame.sprite.Sprite):
                 return self.Thunder(self.skill_target)
 
     # return arrived or not
-    def walk(self, target_tile):
+    def walk(self, target_tile, avoid = True):
         animation_down, sprite_changed = self.walk_animation.play()
         if sprite_changed:
             self.face_target()
@@ -215,7 +230,7 @@ class boy(Player, pygame.sprite.Sprite):
             if self not in self.tile.obj_on:
                 self.tile.obj_on.append(self)
             return True
-        while len(next_tile.obj_on) != 0 and not (len(next_tile.obj_on) == 1 and self in next_tile.obj_on):
+        while avoid and len(next_tile.obj_on) != 0 and not (len(next_tile.obj_on) == 1 and self in next_tile.obj_on):
             next_tile = next_tile.north
         if self not in self.tile.obj_on:
             self.tile.obj_on.append(self)

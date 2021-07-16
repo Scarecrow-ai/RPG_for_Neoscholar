@@ -2,7 +2,7 @@
 
 import pygame
 import pygame_gui
-
+import grid
 
 class Callback_button(pygame_gui.elements.UIButton):
     def __init__(self, size, text, manager, pos=(0, 0)):
@@ -33,7 +33,6 @@ class Target_callback_button(Callback_button):
     def press(self):
         self.player.choose_target(self.target)
 
-
 class Task_callback_button(Callback_button):
     def __init__(self, task, task_manager, manager, pos=(0, 0)):
         Callback_button.__init__(self, (100, 50), task.name, manager, pos=pos)
@@ -43,7 +42,6 @@ class Task_callback_button(Callback_button):
     def press(self):
         self.task_Manager.add_task(self.task)
         self.kill()
-
 
 class Button_list:
     def __init__(self, buttons: list, pos, horizontal=True):
