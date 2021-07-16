@@ -31,8 +31,8 @@ class WorldManger:
         self.plot = plot
         if plot is not None:
             self.show_plot(plot)
-        #self.sound = pygame.mixer.Sound('../Assets/bgm.mp3')
-        #self.sound.play()
+        self.sound = pygame.mixer.Sound('../Assets/bgm.mp3')
+        self.sound.play()
 
     def show_plot(self, texts):
         self.plot_display.show()
@@ -52,7 +52,7 @@ class WorldManger:
         for npc in self.npc_teams:
             if self.player_team.tile.position == npc.tile.position:
                 if isinstance(npc, Enemy.Enemies_team):
-                    #self.sound.stop()
+                    self.sound.stop()
                     gameManager = init_battle(WorldManger.window_size, self.surface, self.player_team.members,
                                               npc, self)
                 elif isinstance(npc, Npc.Task_npc):
