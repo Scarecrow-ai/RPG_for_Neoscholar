@@ -25,10 +25,19 @@ class WorldManger:
         self.background = background
         self.task_Manager = Task.Task_Manager(gui_manager)
         self.player_collision = None
-        self.plot_display = UI.plot_display('', gui_manager)
+        self.plot_display = UI.plot_display(None, gui_manager)
         self.plot_display.hide()
         self.dialogs = dialogs
         self.plot = plot
+        if plot is not None:
+            self.show_plot(plot)
+        self.sound = pygame.mixer.Sound('../Assets/bgm.mp3')
+        self.sound.play()
+
+    def show_plot(self, texts):
+        self.plot_display.show()
+        self.plot_display.set_texts(texts)
+        self.plot_display.next_text()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(WorldManger, "_instance"):
@@ -37,21 +46,22 @@ class WorldManger:
                     WorldManger._instance = object.__new__(cls)
         return WorldManger._instance
 
-    def show_plot(self, text):
-        self.plot_display.update_text(text)
-        self.plot_display.show()
-
     def update(self, time_delta):
         gameManager = self
         self.player_team.update()
         for npc in self.npc_teams:
             if self.player_team.tile.position == npc.tile.position:
                 if isinstance(npc, Enemy.Enemies_team):
+                    self.sound.stop()
                     gameManager = init_battle(WorldManger.window_size, self.surface, self.player_team.members,
                                               npc, self)
                 elif isinstance(npc, Npc.Task_npc):
                     npc.show_task(self.gui_manager, self.task_Manager)
                     self.player_collision = npc
+                    if self.dialogs is not None:
+                        self.show_plot(self.dialogs)
+                        print(self.dialogs)
+                        self.dialogs = None
             elif self.player_collision is npc:
                 self.player_collision.collision_exit()
                 self.player_collision = None
@@ -66,9 +76,6 @@ class WorldManger:
         self.player_team.draw(self.surface)
         self.npc_teams.draw(self.surface)
         self.gui_manager.draw_ui(self.surface)
-
-    def next_plot(self):
-        pass
 
     def check_events(self):
         for event in pygame.event.get():
@@ -86,7 +93,7 @@ class WorldManger:
             #         self.player_team.set_target_tile(self.player_team.tile)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT and self.plot_display.visible:
-                    self.next_plot()
+                    self.plot_display.next_text()
             if event.type == pygame.QUIT:
                 sys.exit()
             self.gui_manager.process_events(event)

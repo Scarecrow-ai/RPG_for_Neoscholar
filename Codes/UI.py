@@ -83,19 +83,21 @@ class Button_list:
 class task_display(pygame_gui.elements.ui_text_box.UITextBox):
     def __init__(self, tasks, gui_manager):
         html_text = self.get_html_text(tasks)
-        pos = (1150, 10)
-        size = (100, 200)
+        pos = (1000, 10)
+        size = (200, 150)
         pygame_gui.elements.ui_text_box.UITextBox.__init__(self, html_text, pygame.Rect(pos, size), gui_manager)
 
     def update_text(self, tasks):
         self.html_text = self.get_html_text(tasks)
+        self.parse_html_into_style_data()
+        self.full_redraw()
 
     def get_html_text(self, tasks):
-        html_text = ''
+        html_text = '<font face=’verdana’ color=’#000000’ size=3.5></font>'
+        html_text += '<i>Tasks:</i><br>'
         for task in tasks:
-            html_text = html_text + '<b>' + task.text + '</b>' + '<br>' + '<font face=’verdana’ color=’#000000’ ' \
-                                                                          'size=3.5></font> '
-        print(html_text)
+            html_text += '<i>' + '    ' + task.name + ':</i><br>'
+            html_text += '<b>' + task.text + '</b>' + '<br>'
         return html_text
 
 
@@ -109,18 +111,22 @@ class plot_display(pygame_gui.elements.ui_text_box.UITextBox):
         self.text_count = 0
 
     def get_html_text(self, text):
-        html_text = ''
-        # todo
+        html_text = '<font face=’verdana’ color=’#000000’ size=3.5></font>'
+        html_text += '<b>' + text + '</b>' + '<br>'
         return html_text
 
     def next_text(self):
-        finished = False
         if self.text_count < len(self.texts):
             self.html_text = self.get_html_text(self.texts[self.text_count])
+            self.parse_html_into_style_data()
+            self.full_redraw()
             self.text_count += 1
         else:
-            finished = True
-        return finished
+            self.text_count = 0
+            self.hide()
+
+    def set_texts(self, texts):
+        self.texts = texts
 
 
 def get_skills_button(x, y, player, manager):

@@ -28,14 +28,18 @@ def level1(window_size_x, window_size_y, surface):
     npc_teams = pygame.sprite.Group()
     npc_teams.add(enemies_team)
     npc_teams.add(Enemy.Enemies_team(enemy_group2, (15, 5), grid))
-    tasks = [Task.Battle_Task('kill monster', 'zombie', 2), Task.Task('collect', '')]
+    tasks = [Task.Battle_Task('kill monster', 'zombie', 4), Task.Collect_Task('collect', 'key', 1)]
     npc_teams.add(Npc.Task_npc((20, 10), grid, tasks))
 
     dialogs = ['I can\'t tell you too much now',
                'But you may try finishing some simple task first',
                'Now choose a task you want to finish']
 
+    plot = ['When you wake up, you find that you are in a dangerous world full of zombies',
+            'You find that there is a normal person not far away',
+            'You decide to ask him what happened']
+
     world_manager = World_module.init_world((window_size_x, window_size_y), surface, player_team,
-                                            npc_teams, dialogs=dialogs)
+                                            npc_teams, dialogs=dialogs, plot=plot)
 
     return world_manager
