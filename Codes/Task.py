@@ -18,14 +18,28 @@ class Battle_Task(Task):
         self.target_number = number
 
     def update_task_status(self, target):
-        print(self.text)
-        print(target.name)
         if target.specie == self.target_specie:
             self.target_number -= 1
         if self.target_number <= 0:
             self.finished = True
         else:
             self.text = "kill " + str(self.target_number) + ' ' + self.target_specie
+        return self.finished
+
+
+class Collect_Task(Task):
+    def __init__(self, name, target_specie, number: int):
+        Task.__init__(self, name, "collect " + str(number) + ' ' + target_specie)
+        self.target_specie = target_specie
+        self.target_number = number
+
+    def update_task_status(self, target):
+        if target.specie == self.target_specie:
+            self.target_number -= 1
+        if self.target_number <= 0:
+            self.finished = True
+        else:
+            self.text = "collect " + str(self.target_number) + ' ' + self.target_specie
         return self.finished
 
 
@@ -43,6 +57,9 @@ class Task_Manager:
             if finished:
                 self.tasks.remove(task)
                 del task
+        self.update_display()
+
+    def update_display(self):
         self.task_display.update_text(self.tasks)
 
     def each_task(self):

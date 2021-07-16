@@ -1,4 +1,6 @@
 # A simple demo to support Battle_Module.py, not expected to be used directly in the final work
+import random
+
 import pygame
 from Utils import vector_subtraction, vector_norm, vector_division
 from Animation import Animation
@@ -48,7 +50,9 @@ class Enemies_team(pygame.sprite.Sprite):
         self.target_tile = None
 
     def update(self):
-        if self.target_tile:
+        if self.target_tile is None:
+            self.target_tile = random.choice(self.tile.all_neighbor())
+        else:
             if self.walk(self.target_tile):
                 self.target_tile = None
 
@@ -57,7 +61,7 @@ class Enemies_team(pygame.sprite.Sprite):
         animation_down, sprite_changed = self.walk_animation.play()
         if sprite_changed:
             self.face_target(target_tile)
-        self.move_to_tile(target_tile)
+        return self.move_to_tile(target_tile)
 
     def face_target(self, target_tile):
         if self.rect.center[0] == self.grid.tile_to_pos(target_tile)[0]:
