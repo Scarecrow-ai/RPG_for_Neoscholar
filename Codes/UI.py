@@ -21,6 +21,7 @@ class Skill_callback_button(Callback_button):
         self.skill_name = skill_name
 
     def press(self):
+        print(f"{self.player} {self.skill_name}")
         self.player.use_skill(self.skill_name)
 
 
@@ -31,6 +32,7 @@ class Target_callback_button(Callback_button):
         self.target = target
 
     def press(self):
+        print(self.target)
         self.player.choose_target(self.target)
 
 class Task_callback_button(Callback_button):
@@ -47,9 +49,10 @@ class Task_callback_button(Callback_button):
         self.kill()
 
 class Skip_callback_button(Callback_button):
-    def __init__(self, bm, manager, pos=(0, 0)):
+    def __init__(self, bm, player, manager, pos=(0, 0)):
         Callback_button.__init__(self, (100, 50), "Skip Moving", manager, pos=pos)
         self.bm = bm
+        self.player = player
 
     def press(self):
         self.bm.stepsleft = 0
@@ -142,7 +145,6 @@ def get_skills_button(x, y, player, manager):
         buttons.append(Skill_callback_button(skill_list[i], player, manager))
     return Button_list(buttons, (x, y), horizontal=False)
 
-
 def get_target_button(x, y, player, manager, enemy_group: pygame.sprite.Group):
     buttons = []
     enemy_list = enemy_group.sprites()
@@ -157,7 +159,7 @@ def get_task_button(x, y, manager, tasks, task_Manager, npc):
         buttons.append(Task_callback_button(task, task_Manager, manager, npc))
     return Button_list(buttons, (x, y), horizontal=True)
 
-def get_skip_button(x, y, bm, manager):
+def get_skip_button(x, y, bm, player, manager):
     buttons = []
-    buttons.append(Skip_callback_button(bm, manager))
+    buttons.append(Skip_callback_button(bm, player, manager))
     return Button_list(buttons, (x, y), horizontal=False)

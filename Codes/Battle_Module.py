@@ -28,6 +28,7 @@ class BattleManger:
         self.selecting = False
         self.targetButtons = None
         self.skillButtons = None
+        self.skipButtons = None
         self.surface = surface
         self.background = background
         self.world_Manager = world_Manager
@@ -64,12 +65,15 @@ class BattleManger:
         character.choose_target(random.choice(self.players.sprites()))
 
     def player_select(self, player):
-        if self.stepsleft > 0 or self.selecting.goal_tile:
-            if self.skillButtons is None:
-                self.skillButtons = UI.get_skip_button(1000, 100, self, self.gui_manager)
+        if self.stepsleft > 0 or self.selecting.goal_tile is not None:
+            if self.skipButtons is None:
+                self.skipButtons = UI.get_skip_button(1000, 100, self, self.selecting, self.gui_manager)
             if self.selecting.goal_tile is not None:
                 self.selecting.battle_update()
         elif self.selecting.using_skill is None:
+            if self.skipButtons is not None:
+                self.skipButtons.kill()
+                self.skipButtons = None
             if self.skillButtons is None:
                 self.skillButtons = UI.get_skills_button(1000, 100, self.selecting, self.gui_manager)
         elif self.selecting.skill_target is None:

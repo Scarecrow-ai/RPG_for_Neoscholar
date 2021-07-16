@@ -171,12 +171,7 @@ class boy(Player, pygame.sprite.Sprite):
         if self.dead:
             return None
         if self.goal_tile is not None:
-            i = 1
-            target_tile = boy.grid.tile_at((min(boy.grid.size[0] - 1, self.goal_tile.position[0] + i),self.goal_tile.position[1]))
-            while len(target_tile.obj_on) != 0 and not (len(target_tile.obj_on) == 1 and self in target_tile.obj_on):
-                i -= 1
-                target_tile = boy.grid.tile_at((min(boy.grid.size[0] - 1, self.goal_tile.position[0] + i),
-                                                self.goal_tile.position[1]))
+            target_tile = boy.grid.tile_at(self.goal_tile.position)
             if not self.walk(target_tile, False):
                 return self
             else:
