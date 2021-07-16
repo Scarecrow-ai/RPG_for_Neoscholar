@@ -79,16 +79,21 @@ class npc(pygame.sprite.Sprite):
 
 
 class Task_npc(npc):
-    def __init__(self, tile_pos, grid, tasks):
+    def __init__(self, tile_pos, grid, tasks: list, dialogs=None):
         npc.__init__(self, tile_pos, grid)
         self.tasks = tasks
         self.task_list = None
+        self.dialogs = dialogs
 
     def show_task(self, gui_manager, task_Manager):
         x, y = self.grid.tile_to_pos(self.tile)
         if self.task_list is None:
-            self.task_list = get_task_button(x - 50, y - 50, gui_manager, self.tasks, task_Manager)
+            self.task_list = get_task_button(x - 50, y - 50, gui_manager, self.tasks, task_Manager, self)
 
-    def collison_exit(self):
+    def collision_exit(self):
         self.task_list.kill()
         self.task_list = None
+
+    def remove_task(self, task):
+        assert task in self.tasks
+        self.tasks.remove(task)

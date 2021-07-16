@@ -43,6 +43,9 @@ class Task_Manager:
             if finished:
                 self.tasks.remove(task)
                 del task
+        self.update_display()
+
+    def update_display(self):
         self.task_display.update_text(self.tasks)
 
     def each_task(self):

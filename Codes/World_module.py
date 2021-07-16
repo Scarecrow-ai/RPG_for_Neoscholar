@@ -17,7 +17,7 @@ class WorldManger:
     _instance_lock = threading.Lock()
     window_size = (1280, 720)
 
-    def __init__(self, player_team, npc_teams, gui_manager, surface, background):
+    def __init__(self, player_team, npc_teams, gui_manager, surface, background, dialogs, plot):
         self.gui_manager = gui_manager
         self.player_team = player_team
         self.npc_teams = npc_teams
@@ -26,7 +26,9 @@ class WorldManger:
         self.task_Manager = Task.Task_Manager(gui_manager)
         self.player_collision = None
         self.plot_display = UI.plot_display('', gui_manager)
-        # self.plot_display.hide()
+        self.plot_display.hide()
+        self.dialogs = dialogs
+        self.plot = plot
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(WorldManger, "_instance"):
@@ -51,8 +53,9 @@ class WorldManger:
                     npc.show_task(self.gui_manager, self.task_Manager)
                     self.player_collision = npc
             elif self.player_collision is npc:
-                self.player_collision.collison_exit()
+                self.player_collision.collision_exit()
                 self.player_collision = None
+            npc.update()
         self.check_events()
         self.gui_manager.update(time_delta)
         self.draw()
@@ -63,6 +66,9 @@ class WorldManger:
         self.player_team.draw(self.surface)
         self.npc_teams.draw(self.surface)
         self.gui_manager.draw_ui(self.surface)
+
+    def next_plot(self):
+        pass
 
     def check_events(self):
         for event in pygame.event.get():
@@ -78,6 +84,9 @@ class WorldManger:
             # if event.type == pygame.KEYUP:
             #     if event.key in [pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d]:
             #         self.player_team.set_target_tile(self.player_team.tile)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == pygame.BUTTON_LEFT and self.plot_display.visible:
+                    self.next_plot()
             if event.type == pygame.QUIT:
                 sys.exit()
             self.gui_manager.process_events(event)
@@ -98,9 +107,9 @@ class WorldManger:
         self.task_Manager.update_all_task(target)
 
 
-def init_world(window_size, surface, player_team, enemy_group):
+def init_world(window_size, surface, player_team, enemy_group, dialogs=None, plot=None):
     world_gui_manager = pygame_gui.UIManager(window_size)
     background = pygame.transform.scale(pygame.image.load('../Assets/World.jpg').convert(), window_size)
     surface.blit(background, (0, 0))
-    worldManger = WorldManger(player_team, enemy_group, world_gui_manager, surface, background)
+    worldManger = WorldManger(player_team, enemy_group, world_gui_manager, surface, background, dialogs, plot)
     return worldManger
